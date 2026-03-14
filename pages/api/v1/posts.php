@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($errors) {
         http_response_code(422);
-        echo jsonapi_encode(['jsonapi' => (object) [], 'errors' => $errors]);
+        echo jsonapi_encode(['errors' => $errors]);
         exit;
     }
 
@@ -49,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     http_response_code(201);
     echo jsonapi_encode([
-        'jsonapi' => (object) [],
         'data'  => serialize_post($post),
         'links' => ['self' => '/api/v1/posts/' . $post->id],
     ]);
@@ -57,4 +56,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 http_response_code(405);
-echo jsonapi_encode(['jsonapi' => (object) [], 'errors' => [['status' => '405', 'title' => 'Method not allowed.']]]);
+echo jsonapi_encode(['errors' => [['status' => '405', 'title' => 'Method not allowed.']]]);

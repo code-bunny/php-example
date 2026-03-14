@@ -14,6 +14,6 @@ function serialize_post(Post $post): array {
             'created_at' => $post->created_at,
             'updated_at' => $post->updated_at,
         ],
-        'links' => ['self' => '/api/posts/' . $post->id],
+        'links' => ['self' => '/api/v1/posts/' . $post->id],
     ];
 }
