@@ -22,6 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Body is required.';
     }
 
+    if (!empty($errors)) {
+        http_response_code(422);
+    }
+
     if (empty($errors)) {
         $post = new Post(['title' => $post_title, 'body' => $body]);
         $post->save();
