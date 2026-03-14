@@ -5,6 +5,9 @@ require_once __DIR__ . '/../models/Subscriber.php';
 Model::setDb($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+    rate_limit('subscribe', 5, 60);
+
     $email = trim($_POST['email'] ?? '');
 
     if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {

@@ -8,6 +8,9 @@ $errors = [];
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+    rate_limit('contact', 5, 60);
+
     $email   = trim($_POST['email'] ?? '');
     $message = trim($_POST['message'] ?? '');
 
@@ -55,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="/contact">
+                <?php csrf_field() ?>
                 <div class="relative mb-4">
                     <label for="email" class="leading-7 text-sm text-gray-600">Email</label>
                     <input type="email" id="email" name="email" value="<?= $success ? '' : htmlspecialchars($_POST['email'] ?? '') ?>"

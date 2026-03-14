@@ -21,6 +21,7 @@
                 <h2 class="title-font font-medium text-gray-900 tracking-widest text-sm mb-3">SUBSCRIBE</h2>
                 <div class="flex xl:flex-nowrap md:flex-nowrap lg:flex-wrap flex-wrap justify-center items-end md:justify-start">
                     <form method="POST" action="/subscribe" class="flex xl:flex-nowrap md:flex-nowrap lg:flex-wrap flex-wrap items-end gap-2">
+                        <?php csrf_field() ?>
                         <div class="relative w-40 sm:w-auto">
                             <label for="footer-field" class="leading-7 text-sm text-gray-600">Email address</label>
                             <input type="email" id="footer-field" name="email" required class="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:bg-transparent focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">

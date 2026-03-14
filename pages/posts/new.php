@@ -11,6 +11,9 @@ $title = 'New Post';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+    rate_limit('posts_new', 10, 60);
+
     $post_title = trim($_POST['title'] ?? '');
     $body       = trim($_POST['body'] ?? '');
 
@@ -41,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php alert($errors) ?>
 
 <form method="POST" action="/posts/new" class="space-y-4 bg-white border border-gray-200 rounded-lg p-6">
+    <?php csrf_field() ?>
     <?php form_input('title', 'Title', $_POST['title'] ?? '') ?>
     <?php form_textarea('body', 'Body', $_POST['body'] ?? '') ?>
     <button type="submit"

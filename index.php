@@ -3,8 +3,18 @@
 require_once 'models/Post.php';
 require_once 'models/Contact.php';
 require_once 'models/Subscriber.php';
+require_once 'helpers/csrf.php';
+require_once 'helpers/rate_limit.php';
 
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+
+// Security headers for all HTML responses (set early; API routes may override)
+if (!str_starts_with($path, '/api/') && $path !== '/openapi.yaml') {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://esm.sh; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https:; frame-src https://maps.google.com; connect-src 'self'");
+}
 
 // OpenAPI spec
 if ($path === '/openapi.yaml') {
