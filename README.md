@@ -14,6 +14,12 @@ Run migrations:
 php migrate.php
 ```
 
+Seed the database with sample posts:
+
+```bash
+php seeds.php
+```
+
 Start the dev server:
 
 ```bash
