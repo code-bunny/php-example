@@ -80,7 +80,7 @@ class Model {
 
     private function update(): bool {
         $id = $this->attributes['id'];
-        $fields = array_filter(array_keys($this->attributes), fn($k) => $k !== 'id');
+        $fields = array_values(array_filter(array_keys($this->attributes), fn($k) => $k !== 'id'));
         $set = implode(', ', array_map(fn($k) => "$k = ?", $fields));
         $sql = "UPDATE " . static::$table . " SET $set WHERE id = ?";
         $values = array_map(fn($k) => $this->attributes[$k], $fields);

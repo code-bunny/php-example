@@ -66,6 +66,47 @@ The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080. Swa
 
 The admin panel is at http://localhost:8000/admin — username: `admin`, password: `secret`.
 
+## Testing
+
+Install dependencies (first time only):
+
+```bash
+composer install
+```
+
+The tests make real HTTP requests to the running app, so **start the dev server first**:
+
+```bash
+php -S localhost:8000 router.php
+```
+
+Then, in a second terminal tab, run the full test suite:
+
+```bash
+vendor/bin/phpunit
+```
+
+Run just one suite:
+
+```bash
+vendor/bin/phpunit --testsuite API
+vendor/bin/phpunit --testsuite Pages
+```
+
+Run a single test file:
+
+```bash
+vendor/bin/phpunit tests/api/v1/PostsTest.php
+```
+
+Run a single test by name:
+
+```bash
+vendor/bin/phpunit --filter test_create_post
+```
+
+Tests clean up after themselves — any records created during a test are deleted when it finishes.
+
 ## API Keys
 
 All API endpoints require a Bearer token. To generate one:
