@@ -57,3 +57,19 @@ php -S localhost:8000 router.php
 The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080. Swagger UI is at http://localhost:8081.
 
 The admin panel is at http://localhost:8000/admin — username: `admin`, password: `secret`.
+
+## API Keys
+
+All API endpoints require a Bearer token. To generate one:
+
+1. Go to http://localhost:8000/admin/api_keys
+2. Enter a name (e.g. `My app`) and click **Generate Key**
+3. Copy the token — it is only shown once
+
+Pass the token in the `Authorization` header with every API request:
+
+```
+Authorization: Bearer <your-api-key>
+```
+
+In Swagger UI, click **Authorize 🔒**, paste the token, and click **Authorize**. All "Try it out" calls will include the header automatically.
