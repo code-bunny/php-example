@@ -6,7 +6,7 @@ Model::setDb($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
-    rate_limit('subscribe', 5, 60);
+    rate_limit('subscribe', max: 3, window: 30 * 60); // 3 attempts per 30 minutes
 
     $email = trim($_POST['email'] ?? '');
 

@@ -9,7 +9,7 @@ $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
-    rate_limit('contact', 5, 60);
+    rate_limit('contact', max: 5, window: 30 * 60); // 5 submissions per 30 minutes
 
     $email   = trim($_POST['email'] ?? '');
     $message = trim($_POST['message'] ?? '');
