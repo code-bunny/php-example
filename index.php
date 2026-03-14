@@ -46,9 +46,14 @@ switch ($path) {
         break;
 
     default:
-        http_response_code(404);
-        $title = '404';
-        echo '<h1 class="text-2xl font-bold">Page not found</h1>';
+        if (preg_match('#^/posts/([0-9a-f-]{36})$#', $path, $matches)) {
+            $id = $matches[1];
+            require 'pages/posts/show.php';
+        } else {
+            http_response_code(404);
+            $title = '404';
+            echo '<h1 class="text-2xl font-bold">Page not found</h1>';
+        }
 }
 
 $content = ob_get_clean();
