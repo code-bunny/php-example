@@ -1,5 +1,31 @@
 # php-example
 
+## Prerequisites
+
+**1. Install Docker Desktop**
+
+Download and install from https://www.docker.com/products/docker-desktop
+
+**2. Install Homebrew**
+
+Homebrew is a package manager for macOS. Open Terminal and run:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**3. Install PHP**
+
+```bash
+brew install php
+```
+
+Verify it worked:
+
+```bash
+php -v
+```
+
 ## Setup
 
 Start the database (MySQL) and phpMyAdmin:
