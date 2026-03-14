@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+
+$root   = dirname(__DIR__);
+$phpunit = $root . '/vendor/bin/phpunit';
+
+if (!file_exists($phpunit)) {
+    fwrite(STDERR, "PHPUnit not found. Run: composer install\n");
+    exit(1);
+}
+
+$args = implode(' ', array_map('escapeshellarg', array_slice($argv, 1)));
+passthru("$phpunit $args", $code);
+exit($code);
