@@ -32,48 +32,45 @@ if (str_starts_with($path, '/api/')) {
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         exit;
     }
+
+    require_once 'db.php';
+    Model::setDb($pdo);
+    require_once 'pages/api/ApiResource.php';
+    require_once 'pages/api/v1/PostsResource.php';
+    require_once 'pages/api/v1/ContactsResource.php';
+    require_once 'pages/api/v1/SubscribersResource.php';
 }
 
 // API routes — respond directly, no layout
 if ($path === '/api/v1/posts') {
-    require 'pages/api/v1/posts.php';
-    exit;
+    (new PostsResource())->collection(); exit;
 }
 
 if ($path === '/api/v1/contacts') {
-    require 'pages/api/v1/contacts.php';
-    exit;
+    (new ContactsResource())->collection(); exit;
 }
 
 if ($path === '/api/v1/subscribers') {
-    require 'pages/api/v1/subscribers.php';
-    exit;
+    (new SubscribersResource())->collection(); exit;
 }
 
 if (preg_match('#^/api/v1/posts/([0-9a-f-]{36})$#', $path, $matches)) {
-    $id = $matches[1];
-    require 'pages/api/v1/posts/show.php';
-    exit;
+    (new PostsResource())->member($matches[1]); exit;
 }
 
 if (preg_match('#^/api/v1/contacts/([0-9a-f-]{36})$#', $path, $matches)) {
-    $id = $matches[1];
-    require 'pages/api/v1/contacts/show.php';
-    exit;
+    (new ContactsResource())->member($matches[1]); exit;
 }
 
 if (preg_match('#^/api/v1/subscribers/([0-9a-f-]{36})$#', $path, $matches)) {
-    $id = $matches[1];
-    require 'pages/api/v1/subscribers/show.php';
-    exit;
+    (new SubscribersResource())->member($matches[1]); exit;
 }
 
 // Catch-all for unmatched /api routes
 if ($path === '/api' || str_starts_with($path, '/api/')) {
-    require_once 'pages/api/serialize.php';
     header('Content-Type: application/vnd.api+json');
     http_response_code(404);
-    echo jsonapi_encode(['errors' => [['status' => '404', 'title' => 'Not found.']]]);
+    echo json_encode(['jsonapi' => ['version' => '1.1'], 'errors' => [['status' => '404', 'title' => 'Not found.']]], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
