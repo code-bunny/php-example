@@ -38,7 +38,7 @@ class Model {
         return array_map(fn($row) => new static($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
-    public static function find(int $id): ?static {
+    public static function find(string $id): ?static {
         $stmt = static::$db->prepare("SELECT * FROM " . static::$table . " WHERE id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -59,6 +59,7 @@ class Model {
     }
 
     private function insert(): bool {
+        $this->attributes['id'] = $this->generateUuid();
         $columns = array_keys($this->attributes);
         $placeholders = array_fill(0, count($columns), '?');
         $sql = sprintf(
@@ -67,12 +68,14 @@ class Model {
             implode(', ', $columns),
             implode(', ', $placeholders)
         );
-        $stmt = static::$db->prepare($sql);
-        $result = $stmt->execute(array_values($this->attributes));
-        if ($result) {
-            $this->attributes['id'] = (int) static::$db->lastInsertId();
-        }
-        return $result;
+        return static::$db->prepare($sql)->execute(array_values($this->attributes));
+    }
+
+    private function generateUuid(): string {
+        $bytes = random_bytes(16);
+        $bytes[6] = chr(ord($bytes[6]) & 0x0f | 0x40);
+        $bytes[8] = chr(ord($bytes[8]) & 0x3f | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
     }
 
     private function update(): bool {

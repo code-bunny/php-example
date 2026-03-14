@@ -10,8 +10,8 @@ if ($path === '/api/v1/posts') {
     exit;
 }
 
-if (preg_match('#^/api/v1/posts/(\d+)$#', $path, $matches)) {
-    $id = (int) $matches[1];
+if (preg_match('#^/api/v1/posts/([0-9a-f-]{36})$#', $path, $matches)) {
+    $id = $matches[1];
     require 'pages/api/v1/posts/show.php';
     exit;
 }

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$post = Post::find((int) $id);
+$post = Post::find($id);
 
 if (!$post) {
     http_response_code(404);
