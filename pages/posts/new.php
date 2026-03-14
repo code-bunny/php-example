@@ -18,6 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Title is required.';
     }
 
+    if ($body === '') {
+        $errors[] = 'Body is required.';
+    }
+
     if (empty($errors)) {
         $post = new Post(['title' => $post_title, 'body' => $body]);
         $post->save();
