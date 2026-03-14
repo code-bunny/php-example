@@ -27,7 +27,7 @@ if ($path === '/openapi.yaml') {
 // CORS for API routes
 if (str_starts_with($path, '/api/')) {
     header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type');
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         exit;
@@ -53,6 +53,18 @@ if ($path === '/api/v1/subscribers') {
 if (preg_match('#^/api/v1/posts/([0-9a-f-]{36})$#', $path, $matches)) {
     $id = $matches[1];
     require 'pages/api/v1/posts/show.php';
+    exit;
+}
+
+if (preg_match('#^/api/v1/contacts/([0-9a-f-]{36})$#', $path, $matches)) {
+    $id = $matches[1];
+    require 'pages/api/v1/contacts/show.php';
+    exit;
+}
+
+if (preg_match('#^/api/v1/subscribers/([0-9a-f-]{36})$#', $path, $matches)) {
+    $id = $matches[1];
+    require 'pages/api/v1/subscribers/show.php';
     exit;
 }
 
@@ -139,10 +151,6 @@ switch ($path) {
 
     case '/subscribe':
         require 'pages/subscribe.php';
-        break;
-
-    case '/posts/new':
-        require 'pages/posts/new.php';
         break;
 
     default:

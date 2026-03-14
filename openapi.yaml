@@ -56,6 +56,36 @@ paths:
                 $ref: '#/components/schemas/PostResource'
         '404':
           $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update a post
+      tags: [Posts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PostUpdateRequest'
+      responses:
+        '200':
+          description: Post updated
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PostResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a post
+      tags: [Posts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '204':
+          description: Post deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /contacts:
     get:
@@ -71,6 +101,72 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/ContactCollection'
+    post:
+      summary: Create a contact submission
+      tags: [Contacts]
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        '201':
+          description: Contact created
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ContactResource'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /contacts/{id}:
+    get:
+      summary: Get a contact submission
+      tags: [Contacts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '200':
+          description: A single contact submission
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ContactResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update a contact submission
+      tags: [Contacts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/ContactUpdateRequest'
+      responses:
+        '200':
+          description: Contact updated
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ContactResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      summary: Delete a contact submission
+      tags: [Contacts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '204':
+          description: Contact deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /subscribers:
     get:
@@ -86,6 +182,74 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/SubscriberCollection'
+    post:
+      summary: Create a subscriber
+      tags: [Subscribers]
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/SubscriberRequest'
+      responses:
+        '201':
+          description: Subscriber created
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubscriberResource'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /subscribers/{id}:
+    get:
+      summary: Get a subscriber
+      tags: [Subscribers]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '200':
+          description: A single subscriber
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubscriberResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update a subscriber
+      tags: [Subscribers]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/SubscriberUpdateRequest'
+      responses:
+        '200':
+          description: Subscriber updated
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubscriberResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      summary: Delete a subscriber
+      tags: [Subscribers]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '204':
+          description: Subscriber deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 components:
   parameters:
@@ -136,6 +300,8 @@ components:
       properties:
         total:
           type: integer
+
+    # Posts
 
     PostAttributes:
       type: object
@@ -212,6 +378,30 @@ components:
                 body:
                   type: string
 
+    PostUpdateRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, id, attributes]
+          properties:
+            type:
+              type: string
+              example: posts
+            id:
+              type: string
+              format: uuid
+            attributes:
+              type: object
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+
+    # Contacts
+
     ContactAttributes:
       type: object
       properties:
@@ -241,6 +431,16 @@ components:
             self:
               type: string
 
+    ContactResource:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          $ref: '#/components/schemas/ContactResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+
     ContactCollection:
       type: object
       properties:
@@ -254,6 +454,52 @@ components:
           $ref: '#/components/schemas/Links'
         meta:
           $ref: '#/components/schemas/Meta'
+
+    ContactRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, attributes]
+          properties:
+            type:
+              type: string
+              example: contacts
+            attributes:
+              type: object
+              required: [email, message]
+              properties:
+                email:
+                  type: string
+                  format: email
+                message:
+                  type: string
+
+    ContactUpdateRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, id, attributes]
+          properties:
+            type:
+              type: string
+              example: contacts
+            id:
+              type: string
+              format: uuid
+            attributes:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                message:
+                  type: string
+
+    # Subscribers
 
     SubscriberAttributes:
       type: object
@@ -282,6 +528,16 @@ components:
             self:
               type: string
 
+    SubscriberResource:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          $ref: '#/components/schemas/SubscriberResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+
     SubscriberCollection:
       type: object
       properties:
@@ -295,6 +551,47 @@ components:
           $ref: '#/components/schemas/Links'
         meta:
           $ref: '#/components/schemas/Meta'
+
+    SubscriberRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, attributes]
+          properties:
+            type:
+              type: string
+              example: subscribers
+            attributes:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+
+    SubscriberUpdateRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, id, attributes]
+          properties:
+            type:
+              type: string
+              example: subscribers
+            id:
+              type: string
+              format: uuid
+            attributes:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
 
     Error:
       type: object
@@ -319,6 +616,18 @@ components:
 
     UnprocessableEntity:
       description: Validation failed
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+
+    Conflict:
+      description: Resource already exists
       content:
         application/vnd.api+json:
           schema:

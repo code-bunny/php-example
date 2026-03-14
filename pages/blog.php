@@ -19,17 +19,12 @@ $title = 'Blog';
 
 <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-medium text-gray-900">Blog</h1>
-    <a href="/posts/new" class="inline-flex items-center bg-indigo-500 text-white border-0 py-2 px-4 focus:outline-none hover:bg-indigo-600 rounded">New Post
-        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-1" viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7"></path>
-        </svg>
-    </a>
 </div>
 
 <section class="text-gray-600 body-font overflow-hidden">
     <div class="flex flex-wrap -m-12">
         <?php if (empty($posts)): ?>
-            <p class="text-gray-500 p-12">No posts yet. <a href="/posts/new" class="text-blue-600 hover:underline">Create one.</a></p>
+            <p class="text-gray-500 p-12">No posts yet.</p>
         <?php else: ?>
             <?php foreach ($posts as $post): ?>
                 <?php post_card($post) ?>
