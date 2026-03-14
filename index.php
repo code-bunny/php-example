@@ -63,6 +63,10 @@ switch ($path) {
         require 'pages/home.php';
         break;
 
+    case '/blog':
+        require 'pages/blog.php';
+        break;
+
     case '/about':
         require 'pages/about.php';
         break;

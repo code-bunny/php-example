@@ -5,6 +5,7 @@
                 <h2 class="title-font font-medium text-gray-900 tracking-widest text-sm mb-3">PAGES</h2>
                 <nav class="list-none mb-10">
                     <li><a href="/" class="text-gray-600 hover:text-gray-800">Home</a></li>
+                    <li><a href="/blog" class="text-gray-600 hover:text-gray-800">Blog</a></li>
                     <li><a href="/about" class="text-gray-600 hover:text-gray-800">About</a></li>
                     <li><a href="/contact" class="text-gray-600 hover:text-gray-800">Contact</a></li>
                     <li><a href="/posts/new" class="text-gray-600 hover:text-gray-800">New Post</a></li>
