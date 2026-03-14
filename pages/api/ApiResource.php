@@ -40,7 +40,7 @@ abstract class ApiResource {
     }
 
     protected function pageParams(): array {
-        $size   = max(1, (int) ($_GET['page']['size']   ?? 10));
+        $size   = min(100, max(1, (int) ($_GET['page']['size']   ?? 10)));
         $number = max(1, (int) ($_GET['page']['number'] ?? 1));
         return ['size' => $size, 'number' => $number, 'offset' => ($number - 1) * $size];
     }
