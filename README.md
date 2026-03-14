@@ -2,6 +2,8 @@
 
 ## Prerequisites
 
+Skip any steps you have already completed: You may already have Homebrew, PHP, and Docker installed.
+
 **1. Install Docker Desktop**
 
 Download and install from https://www.docker.com/products/docker-desktop
