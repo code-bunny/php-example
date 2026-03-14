@@ -40,9 +40,9 @@ $social = require __DIR__ . '/../../config/social.php';
         <div class="container px-5 py-6 mx-auto flex items-center sm:flex-row flex-col">
             <a href="/" class="flex title-font font-medium items-center md:justify-start justify-center text-gray-900">
                 <?php logo() ?>
-                <span class="ml-2 text-xl">My App</span>
+                <span class="ml-2 text-xl"><?= htmlspecialchars($app['name']) ?></span>
             </a>
-            <p class="text-sm text-gray-500 sm:ml-6 sm:mt-0 mt-4">© <?= date('Y') ?> My App</p>
+            <p class="text-sm text-gray-500 sm:ml-6 sm:mt-0 mt-4">© <?= date('Y') ?> <?= htmlspecialchars($app['name']) ?></p>
             <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
                 <?php foreach ($social as $i => $link): ?>
                     <?php if (empty($link['url'])) continue ?>

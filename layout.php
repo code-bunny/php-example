@@ -1,9 +1,10 @@
+<?php $app = require __DIR__ . '/config/app.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'My App') ?></title>
+    <title><?= htmlspecialchars($title ?? $app['name']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import * as Turbo from 'https://esm.sh/@hotwired/turbo';
