@@ -55,11 +55,10 @@
                     </nav>
                 </div>
                 <div class="lg:w-1/4 md:w-1/2 w-full px-4">
-                    <h2 class="title-font font-medium text-gray-900 tracking-widest text-sm mb-3">API</h2>
+                    <h2 class="title-font font-medium text-gray-900 tracking-widest text-sm mb-3">TOOLS</h2>
                     <nav class="list-none mb-10">
-                        <li><a href="/api/v1/posts" class="text-gray-600 hover:text-gray-800">GET /api/v1/posts</a></li>
-                        <li><a href="/api/v1/contacts" class="text-gray-600 hover:text-gray-800">GET /api/v1/contacts</a></li>
-                        <li><a href="/api/v1/subscribers" class="text-gray-600 hover:text-gray-800">GET /api/v1/subscribers</a></li>
+                        <li><a href="http://localhost:8081" class="text-gray-600 hover:text-gray-800">Swagger UI</a></li>
+                        <li><a href="http://localhost:8080" class="text-gray-600 hover:text-gray-800">phpMyAdmin</a></li>
                     </nav>
                 </div>
                 <div class="lg:w-1/2 md:w-full w-full px-4">
