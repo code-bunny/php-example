@@ -2,12 +2,10 @@
 
 require_once __DIR__ . '/components/post_card.php';
 
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=mydb', 'user', 'pass');
+require_once __DIR__ . '/../db.php';
 Model::setDb($pdo);
+
 $posts = Post::all();
-
-$title = 'Home';
-
 ?>
 
 <div class="flex items-center justify-between mb-6">

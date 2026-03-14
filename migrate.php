@@ -1,8 +1,6 @@
 <?php
 
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=mydb', 'user', 'pass', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-]);
+require_once __DIR__ . '/db.php';
 
 // Ensure migrations tracking table exists
 $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (

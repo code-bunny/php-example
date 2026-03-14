@@ -4,7 +4,7 @@ require_once __DIR__ . '/../components/alert.php';
 require_once __DIR__ . '/../components/form_input.php';
 require_once __DIR__ . '/../components/form_textarea.php';
 
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=mydb', 'user', 'pass');
+require_once __DIR__ . '/../../db.php';
 Model::setDb($pdo);
 
 $title = 'New Post';

@@ -1,8 +1,6 @@
 <?php
 
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=mydb', 'user', 'pass', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-]);
+require_once __DIR__ . '/db.php';
 
 $posts = [
     ['Getting Started with PHP', 'PHP is a widely-used open source scripting language suited for web development. It is fast to learn and runs on the server side.'],
