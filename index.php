@@ -3,6 +3,7 @@
 require_once 'models/Post.php';
 require_once 'models/Contact.php';
 require_once 'models/Subscriber.php';
+require_once 'models/ApiKey.php';
 require_once 'helpers/csrf.php';
 require_once 'helpers/rate_limit.php';
 
@@ -28,13 +29,15 @@ if ($path === '/openapi.yaml') {
 if (str_starts_with($path, '/api/')) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         exit;
     }
 
     require_once 'db.php';
     Model::setDb($pdo);
+    require_once 'helpers/api_auth.php';
+    api_authenticate();
     require_once 'pages/api/ApiResource.php';
     require_once 'pages/api/v1/PostsResource.php';
     require_once 'pages/api/v1/ContactsResource.php';
@@ -82,10 +85,15 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
     Model::setDb($pdo);
 
     // Deletes: POST /admin/{resource}/{id}/delete → delete record, redirect to list
-    if (preg_match('#^/admin/(posts|contacts|subscribers)/([0-9a-f-]{36})/delete$#', $path, $m)
+    if (preg_match('#^/admin/(posts|contacts|subscribers|api_keys)/([0-9a-f-]{36})/delete$#', $path, $m)
         && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_verify();
-        $class  = match($m[1]) { 'posts' => 'Post', 'contacts' => 'Contact', 'subscribers' => 'Subscriber' };
+        $class  = match($m[1]) {
+            'posts'       => 'Post',
+            'contacts'    => 'Contact',
+            'subscribers' => 'Subscriber',
+            'api_keys'    => 'ApiKey',
+        };
         $record = $class::find($m[2]);
         if ($record) $record->delete();
         header('Location: /admin/' . $m[1]);
@@ -115,6 +123,8 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
     } elseif (preg_match('#^/admin/subscribers/([0-9a-f-]{36})/edit$#', $path, $matches)) {
         $id = $matches[1];
         require 'pages/admin/subscribers/edit.php';
+    } elseif ($path === '/admin/api_keys') {
+        require 'pages/admin/api_keys/index.php';
     } else {
         http_response_code(404);
         $title = '404';

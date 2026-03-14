@@ -6,5 +6,6 @@ function admin_nav(string $current = ''): void { ?>
         <a href="/admin/posts" class="text-sm font-medium <?= $current === 'posts'       ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900' ?>">Posts</a>
         <a href="/admin/contacts" class="text-sm font-medium <?= $current === 'contacts'    ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900' ?>">Contacts</a>
         <a href="/admin/subscribers" class="text-sm font-medium <?= $current === 'subscribers' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900' ?>">Subscribers</a>
+        <a href="/admin/api_keys" class="text-sm font-medium <?= $current === 'api_keys' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900' ?>">API Keys</a>
     </nav>
 <?php }

@@ -7,6 +7,9 @@ info:
 servers:
   - url: http://localhost:8000/api/v1
 
+security:
+  - bearerAuth: []
+
 paths:
   /posts:
     get:
@@ -252,6 +255,14 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >
+        API key as a Bearer token. Generate keys in the admin panel at /admin/api_keys.
+        Pass as: Authorization: Bearer <your-api-key>
+
   parameters:
     UuidId:
       name: id
