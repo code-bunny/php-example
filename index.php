@@ -3,6 +3,9 @@
 require_once 'helpers/env.php';
 load_env(__DIR__ . '/.env');
 
+require_once 'helpers/logger.php';
+start_request_log();
+
 // Show errors in development; log silently in production
 error_reporting(E_ALL);
 if (($_ENV['APP_ENV'] ?? 'development') === 'production') {
@@ -18,6 +21,7 @@ require_once 'models/Subscriber.php';
 require_once 'models/ApiKey.php';
 require_once 'helpers/csrf.php';
 require_once 'helpers/rate_limit.php';
+csrf_start();
 
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 

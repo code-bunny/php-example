@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/../../../models/ApiKey.php';
 require_once __DIR__ . '/../_nav.php';
 require_once __DIR__ . '/../../components/alert.php';
-csrf_start();
 Model::setDb($pdo);
 
 $title  = 'Admin — API Keys';

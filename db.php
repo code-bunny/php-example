@@ -7,7 +7,9 @@ if (empty($_ENV['DB_HOST'])) {
     load_env(__DIR__ . '/.env');
 }
 
-$pdo = new PDO(
+require_once __DIR__ . '/helpers/logger.php';
+
+$pdo = new LoggingPDO(
     'mysql:host=' . $_ENV['DB_HOST'] . ';dbname=' . $_ENV['DB_NAME'],
     $_ENV['DB_USER'],
     $_ENV['DB_PASS'],
