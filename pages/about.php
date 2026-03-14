@@ -8,8 +8,7 @@
             </h1>
             <p class="mb-8 leading-relaxed">This app demonstrates core PHP concepts including routing, models, migrations, a REST API, and Turbo for SPA-like navigation — all without a framework.</p>
             <div class="flex justify-center">
-                <a href="/posts/new" class="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">New Post</a>
-                <a href="/api/v1/posts" class="ml-4 inline-flex text-gray-700 bg-gray-100 border-0 py-2 px-6 focus:outline-none hover:bg-gray-200 rounded text-lg">API</a>
+                <a href="/blog" class="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">Read the Blog</a>
             </div>
         </div>
         <div class="lg:max-w-lg lg:w-full md:w-1/2 w-5/6">

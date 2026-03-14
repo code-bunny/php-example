@@ -8,7 +8,6 @@
                     <li><a href="/blog" class="text-gray-600 hover:text-gray-800">Blog</a></li>
                     <li><a href="/about" class="text-gray-600 hover:text-gray-800">About</a></li>
                     <li><a href="/contact" class="text-gray-600 hover:text-gray-800">Contact</a></li>
-                    <li><a href="/posts/new" class="text-gray-600 hover:text-gray-800">New Post</a></li>
                 </nav>
             </div>
             <div class="lg:w-1/4 md:w-1/2 w-full px-4">
