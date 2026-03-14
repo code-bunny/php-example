@@ -16,6 +16,15 @@ if (preg_match('#^/api/v1/posts/(\d+)$#', $path, $matches)) {
     exit;
 }
 
+// Catch-all for unmatched /api routes
+if ($path === '/api' || str_starts_with($path, '/api/')) {
+    require_once 'pages/api/serialize.php';
+    header('Content-Type: application/vnd.api+json');
+    http_response_code(404);
+    echo jsonapi_encode(['errors' => [['status' => '404', 'title' => 'Not found.']]]);
+    exit;
+}
+
 // HTML routes
 ob_start();
 
