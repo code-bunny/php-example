@@ -55,3 +55,5 @@ php -S localhost:8000 router.php
 ```
 
 The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080. Swagger UI is at http://localhost:8081.
+
+The admin panel is at http://localhost:8000/admin — username: `admin`, password: `secret`.

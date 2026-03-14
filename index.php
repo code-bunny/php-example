@@ -65,6 +65,58 @@ if ($path === '/api' || str_starts_with($path, '/api/')) {
     exit;
 }
 
+// Admin routes
+if ($path === '/admin' || str_starts_with($path, '/admin/')) {
+    require_once 'helpers/admin_auth.php';
+    admin_auth();
+    require_once 'db.php';
+    Model::setDb($pdo);
+
+    // Deletes: POST /admin/{resource}/{id}/delete → delete record, redirect to list
+    if (preg_match('#^/admin/(posts|contacts|subscribers)/([0-9a-f-]{36})/delete$#', $path, $m)
+        && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_verify();
+        $class  = match($m[1]) { 'posts' => 'Post', 'contacts' => 'Contact', 'subscribers' => 'Subscriber' };
+        $record = $class::find($m[2]);
+        if ($record) $record->delete();
+        header('Location: /admin/' . $m[1]);
+        exit;
+    }
+
+    ob_start();
+
+    if ($path === '/admin') {
+        require 'pages/admin/index.php';
+    } elseif ($path === '/admin/posts') {
+        require 'pages/admin/posts/index.php';
+    } elseif ($path === '/admin/posts/new') {
+        require 'pages/admin/posts/edit.php';
+    } elseif (preg_match('#^/admin/posts/([0-9a-f-]{36})/edit$#', $path, $matches)) {
+        $id = $matches[1];
+        require 'pages/admin/posts/edit.php';
+    } elseif ($path === '/admin/contacts') {
+        require 'pages/admin/contacts/index.php';
+    } elseif (preg_match('#^/admin/contacts/([0-9a-f-]{36})/edit$#', $path, $matches)) {
+        $id = $matches[1];
+        require 'pages/admin/contacts/edit.php';
+    } elseif ($path === '/admin/subscribers') {
+        require 'pages/admin/subscribers/index.php';
+    } elseif ($path === '/admin/subscribers/new') {
+        require 'pages/admin/subscribers/edit.php';
+    } elseif (preg_match('#^/admin/subscribers/([0-9a-f-]{36})/edit$#', $path, $matches)) {
+        $id = $matches[1];
+        require 'pages/admin/subscribers/edit.php';
+    } else {
+        http_response_code(404);
+        $title = '404';
+        echo '<h1 class="text-2xl font-bold">Admin page not found</h1>';
+    }
+
+    $content = ob_get_clean();
+    require 'layout.php';
+    exit;
+}
+
 // HTML routes
 ob_start();
 
