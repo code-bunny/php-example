@@ -122,7 +122,7 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
     }
 
     $content = ob_get_clean();
-    require 'layout.php';
+    require 'admin_layout.php';
     exit;
 }
 
