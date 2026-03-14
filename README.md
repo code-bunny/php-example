@@ -23,7 +23,7 @@ php seeds.php
 Start the dev server:
 
 ```bash
-php -S localhost:8000
+php -S localhost:8000 router.php
 ```
 
-The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080.
+The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080. Swagger UI is at http://localhost:8081.

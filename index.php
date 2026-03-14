@@ -6,6 +6,24 @@ require_once 'models/Subscriber.php';
 
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
+// OpenAPI spec
+if ($path === '/openapi.yaml') {
+    header('Access-Control-Allow-Origin: *');
+    header('Content-Type: application/yaml');
+    readfile(__DIR__ . '/openapi.yaml');
+    exit;
+}
+
+// CORS for API routes
+if (str_starts_with($path, '/api/')) {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        exit;
+    }
+}
+
 // API routes — respond directly, no layout
 if ($path === '/api/v1/posts') {
     require 'pages/api/v1/posts.php';

@@ -1,0 +1,330 @@
+openapi: 3.1.0
+info:
+  title: My App API
+  version: 1.0.0
+  description: REST API following JSON:API v1.1
+
+servers:
+  - url: http://localhost:8000/api/v1
+
+paths:
+  /posts:
+    get:
+      summary: List posts
+      tags: [Posts]
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: A paginated list of posts
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PostCollection'
+    post:
+      summary: Create a post
+      tags: [Posts]
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PostRequest'
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PostResource'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /posts/{id}:
+    get:
+      summary: Get a post
+      tags: [Posts]
+      parameters:
+        - $ref: '#/components/parameters/UuidId'
+      responses:
+        '200':
+          description: A single post
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/PostResource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /contacts:
+    get:
+      summary: List contact submissions
+      tags: [Contacts]
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: A paginated list of contact submissions
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ContactCollection'
+
+  /subscribers:
+    get:
+      summary: List subscribers
+      tags: [Subscribers]
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: A paginated list of subscribers
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/SubscriberCollection'
+
+components:
+  parameters:
+    UuidId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 550e8400-e29b-41d4-a716-446655440000
+
+    PageNumber:
+      name: page[number]
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSize:
+      name: page[size]
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+
+  schemas:
+    Links:
+      type: object
+      properties:
+        self:
+          type: string
+        first:
+          type: string
+        last:
+          type: string
+        prev:
+          type: string
+          nullable: true
+        next:
+          type: string
+          nullable: true
+
+    Meta:
+      type: object
+      properties:
+        total:
+          type: integer
+
+    PostAttributes:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PostResourceObject:
+      type: object
+      properties:
+        type:
+          type: string
+          example: posts
+        id:
+          type: string
+          format: uuid
+        attributes:
+          $ref: '#/components/schemas/PostAttributes'
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+
+    PostResource:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          $ref: '#/components/schemas/PostResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+
+    PostCollection:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    PostRequest:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [type, attributes]
+          properties:
+            type:
+              type: string
+              example: posts
+            attributes:
+              type: object
+              required: [title, body]
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+
+    ContactAttributes:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ContactResourceObject:
+      type: object
+      properties:
+        type:
+          type: string
+          example: contacts
+        id:
+          type: string
+          format: uuid
+        attributes:
+          $ref: '#/components/schemas/ContactAttributes'
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+
+    ContactCollection:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    SubscriberAttributes:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+
+    SubscriberResourceObject:
+      type: object
+      properties:
+        type:
+          type: string
+          example: subscribers
+        id:
+          type: string
+          format: uuid
+        attributes:
+          $ref: '#/components/schemas/SubscriberAttributes'
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+
+    SubscriberCollection:
+      type: object
+      properties:
+        jsonapi:
+          type: object
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriberResourceObject'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+        title:
+          type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+
+    UnprocessableEntity:
+      description: Validation failed
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
