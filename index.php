@@ -1,5 +1,17 @@
 <?php
 
+require_once 'helpers/env.php';
+load_env(__DIR__ . '/.env');
+
+// Show errors in development; log silently in production
+error_reporting(E_ALL);
+if (($_ENV['APP_ENV'] ?? 'development') === 'production') {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+} else {
+    ini_set('display_errors', '1');
+}
+
 require_once 'models/Post.php';
 require_once 'models/Contact.php';
 require_once 'models/Subscriber.php';

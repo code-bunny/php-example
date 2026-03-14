@@ -30,6 +30,14 @@ php -v
 
 ## Setup
 
+Copy the environment file:
+
+```bash
+cp .env.example .env
+```
+
+The defaults work with the Docker setup below. Edit `.env` to change credentials before deploying.
+
 Start the database (MySQL) and phpMyAdmin:
 
 ```bash
