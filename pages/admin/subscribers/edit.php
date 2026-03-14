@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $subscriber = new Subscriber(['email' => $email]);
         }
         $subscriber->save();
+        flash(isset($id) ? 'Subscriber updated.' : 'Subscriber created.');
         header('Location: /admin/subscribers');
         exit;
     }

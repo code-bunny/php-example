@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $contact->email   = $email;
         $contact->message = $message;
         $contact->save();
+        flash('Contact updated.');
         header('Location: /admin/contacts');
         exit;
     }

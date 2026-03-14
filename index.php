@@ -20,6 +20,7 @@ require_once 'models/Contact.php';
 require_once 'models/Subscriber.php';
 require_once 'models/ApiKey.php';
 require_once 'helpers/csrf.php';
+require_once 'helpers/flash.php';
 require_once 'helpers/rate_limit.php';
 csrf_start();
 
@@ -30,7 +31,7 @@ if (!str_starts_with($path, '/api/') && $path !== '/openapi.yaml') {
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: SAMEORIGIN');
     header('Referrer-Policy: strict-origin-when-cross-origin');
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://esm.sh; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https://placecats.com; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://maps.googleapis.com");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://esm.sh https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https://placecats.com; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://maps.googleapis.com; worker-src blob:");
 }
 
 // OpenAPI spec
@@ -111,7 +112,16 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
             'api_keys'    => 'ApiKey',
         };
         $record = $class::find($m[2]);
-        if ($record) $record->delete();
+        if ($record) {
+            $record->delete();
+            $label = match($m[1]) {
+                'posts'       => 'Post',
+                'contacts'    => 'Contact',
+                'subscribers' => 'Subscriber',
+                'api_keys'    => 'API key',
+            };
+            flash($label . ' deleted.');
+        }
         header('Location: /admin/' . $m[1]);
         exit;
     }

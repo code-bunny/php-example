@@ -22,7 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $token = bin2hex(random_bytes(32)); // 64-char secure random token
         (new ApiKey(['name' => $name, 'token' => $token]))->save();
+        flash('API key created.');
         $_SESSION['flash_api_token'] = $token;
+        $_SESSION['flash_confetti']  = true;
         header('Location: /admin/api_keys');
         exit;
     }

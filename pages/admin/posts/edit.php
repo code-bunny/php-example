@@ -29,6 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $post = new Post(['title' => $post_title, 'body' => $body]);
         }
         $post->save();
+        if (isset($id)) {
+            flash('Post updated.');
+        } else {
+            flash('Post created.');
+            $_SESSION['flash_confetti'] = true;
+        }
         header('Location: /admin/posts');
         exit;
     }
