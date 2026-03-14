@@ -1,12 +1,24 @@
 <?php
 
 require_once 'models/Post.php';
+require_once 'models/Contact.php';
+require_once 'models/Subscriber.php';
 
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
 // API routes — respond directly, no layout
 if ($path === '/api/v1/posts') {
     require 'pages/api/v1/posts.php';
+    exit;
+}
+
+if ($path === '/api/v1/contacts') {
+    require 'pages/api/v1/contacts.php';
+    exit;
+}
+
+if ($path === '/api/v1/subscribers') {
+    require 'pages/api/v1/subscribers.php';
     exit;
 }
 
@@ -39,6 +51,10 @@ switch ($path) {
 
     case '/contact':
         require 'pages/contact.php';
+        break;
+
+    case '/subscribe':
+        require 'pages/subscribe.php';
         break;
 
     case '/posts/new':
