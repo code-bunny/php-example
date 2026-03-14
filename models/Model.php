@@ -21,6 +21,18 @@ class Model {
         $this->attributes[$key] = $value;
     }
 
+    public static function count(): int {
+        return (int) static::$db->query("SELECT COUNT(*) FROM " . static::$table)->fetchColumn();
+    }
+
+    public static function paginate(int $limit, int $offset): array {
+        $stmt = static::$db->prepare("SELECT * FROM " . static::$table . " LIMIT ? OFFSET ?");
+        $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return array_map(fn($row) => new static($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
     public static function all(): array {
         $stmt = static::$db->query("SELECT * FROM " . static::$table);
         return array_map(fn($row) => new static($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
