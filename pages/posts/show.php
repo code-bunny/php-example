@@ -30,7 +30,6 @@ $title = $post->title;
                     </svg>
                     Back
                 </a>
-                <span class="text-gray-400 font-mono text-xs ml-auto"><?= $post->id ?></span>
             </div>
         </div>
     </div>
