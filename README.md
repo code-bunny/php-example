@@ -223,6 +223,100 @@ PostSerializer::one($post)      // single resource object
 PostSerializer::many($posts)    // array of resource objects
 ```
 
+## Generators
+
+`bin/generate` scaffolds boilerplate so you can focus on the logic. Generated `.php` files are automatically linted with `php -l` and any syntax errors are printed immediately.
+
+### Model
+
+Creates a model class and a numbered migration:
+
+```bash
+bin/generate model Post title:string body:text
+```
+
+Creates:
+- `app/models/Post.php` — thin `Model` subclass
+- `migrations/NNNN_create_posts.php` — `CREATE TABLE` with `id`, your fields, `created_at`, `updated_at`
+
+Field types: `string` (VARCHAR 255), `text`, `integer`, `boolean`, `decimal`, `float`, `date`, `datetime`.
+
+### Controller
+
+Creates a controller and a view stub per action, and injects the routes into `index.php`:
+
+```bash
+bin/generate controller Posts index show create edit
+```
+
+Creates:
+- `app/controllers/PostsController.php` — stub method per action
+- `app/views/posts/{action}.php` — one view stub per action
+
+Injects into `index.php`:
+
+| Action | Route added |
+|--------|-------------|
+| `index` | `case '/posts':` → `$ctrl->index()` |
+| `create` | `case '/posts/new':` → `$ctrl->create()` |
+| `show` | `preg_match('#^/posts/([uuid])$#')` → `$ctrl->show($id)` |
+| `edit` | `preg_match('#^/posts/([uuid])/edit$#')` → `$ctrl->edit($id)` |
+
+Other action names are created as stubs but not wired — add those routes manually.
+
+### API endpoint
+
+Creates an endpoint file with full CRUD, a serializer, and registers both in `app/api/Api.php`:
+
+```bash
+bin/generate api Post title:string body:text
+```
+
+Creates:
+- `app/api/endpoints/Posts.php` — `resource()` block with `get`, `post`, `patch`, `delete`
+- `app/api/serializers/PostSerializer.php` — serializer with your fields + `createdAt`/`updatedAt`
+- Updates `app/api/Api.php` to require the new endpoint
+
+The post/patch handlers include a `// TODO: validate $attrs` comment — add your own validation there.
+
+### Serializer
+
+Creates just the serializer:
+
+```bash
+bin/generate serializer Post title:string body:text
+```
+
+### Migration
+
+Creates a standalone migration. The name determines what SQL is generated:
+
+```bash
+bin/generate migration AddFullBodyToUsers full_body:text   # ALTER TABLE users ADD COLUMN
+bin/generate migration RemoveAvatarFromPosts avatar        # ALTER TABLE posts DROP COLUMN
+bin/generate migration AddIndexToSubscribers               # empty migration with TODO
+```
+
+| Name pattern | Generated SQL |
+|---|---|
+| `Add<X>To<Table>` + fields | `ALTER TABLE <table> ADD COLUMN ...` |
+| `Remove<X>From<Table>` + fields | `ALTER TABLE <table> DROP COLUMN ...` |
+| Anything else | Empty migration with a `// TODO` comment |
+
+The table name is taken directly from the `To<Table>` / `From<Table>` suffix — `ToApiKeys` → `api_keys`.
+
+After generating a migration, run it:
+
+```bash
+php migrate.php
+```
+
+### Notes
+
+- **Won't overwrite** — skips files that already exist, safe to re-run
+- **Route deduplication** — controller routes are not added twice if they're already in `index.php`
+- **Migration numbering** — auto-increments from the highest existing number
+
 ## Testing
 
 Run the full test suite:
@@ -298,7 +392,8 @@ APP_ENV=test php migrate.php
 │   ├── serve              # Start the dev server (localhost:8000)
 │   ├── console            # Interactive shell (PsySH)
 │   ├── test               # Run the test suite
-│   └── coverage           # Run tests and generate an HTML coverage report
+│   ├── coverage           # Run tests and generate an HTML coverage report
+│   └── generate           # Scaffold models, controllers, API endpoints, serializers, migrations
 └── docker/
     └── init.sql           # Creates mydb_development and mydb_test databases
 ```
