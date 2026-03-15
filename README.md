@@ -8,6 +8,16 @@ If you want to build something simpler to start from, go back to the first commi
 
 If you want to go further, use one of the off-the-shelf frameworks. Ideally Ruby on Rails, but if PHP is your cuppa tea, Laravel is the way to go.
 
+## Application Design
+
+The application is built to demonstrate a few different patterns without leaning on a framework:
+
+- **MVC** — HTML pages follow a controller/view split. Controllers handle logic and pass data to views; views are pure templates. The router in `index.php` owns layout rendering.
+- **ActiveRecord** — Models extend a base `Model` class with `find`, `where`, `save`, `delete`, `paginate`, and `count`. Each model is a thin subclass that declares its table name.
+- **API DSL** — The JSON:API layer uses a Grape-inspired DSL (`resource`, `routeParam`, `get`, `post`, `patch`, `delete`) with a path stack for nested routes. No classes or `$this` in endpoint files.
+- **Serializers** — JSON:API responses are built by serializer classes that declare attributes and relationships. Attribute names are camelCase; transforms are defined as methods.
+- **Tests** — PHPUnit with two kinds of tests: unit tests that load app code in-process, and request tests that hit a real HTTP server.
+
 ## Prerequisites
 
 Skip any steps you have already completed.
