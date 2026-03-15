@@ -2,6 +2,10 @@
 
 A PHP web application with a JSON:API, an admin panel, and a public site. Built to demonstrate how a well-structured PHP app works without a framework.
 
+This is intended for a student who is learning PHP to build up their own system, with common gotchas covered.
+
+If you want to build something simpler to start from, go back to the first commit in the repository where the first building blocks are demonstrated. 
+
 ## Prerequisites
 
 Skip any steps you have already completed.
