@@ -4,6 +4,9 @@
          bootstrap="tests/bootstrap.php"
          colors="true">
     <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/unit</directory>
+        </testsuite>
         <testsuite name="API">
             <directory>tests/api</directory>
         </testsuite>
@@ -11,4 +14,17 @@
             <directory>tests/pages</directory>
         </testsuite>
     </testsuites>
+
+    <source>
+        <!--
+            Coverage is measured by unit tests (tests/unit/) which load app code
+            directly in-process. Request tests (api/, pages/) make real HTTP calls
+            to the running server — a separate process — so that code can't be
+            instrumented here. Scope coverage to what unit tests can actually reach.
+        -->
+        <include>
+            <directory>models</directory>
+            <directory>helpers</directory>
+        </include>
+    </source>
 </phpunit>

@@ -1,14 +1,25 @@
-#!/usr/bin/env php
-<?php
+#!/usr/bin/env bash
+set -e
 
-$root   = dirname(__DIR__);
-$phpunit = $root . '/vendor/bin/phpunit';
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SERVER_PID=""
 
-if (!file_exists($phpunit)) {
-    fwrite(STDERR, "PHPUnit not found. Run: composer install\n");
-    exit(1);
+cleanup() {
+    [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null || true
 }
+trap cleanup EXIT INT TERM
 
-$args = implode(' ', array_map('escapeshellarg', array_slice($argv, 1)));
-passthru("$phpunit $args", $code);
-exit($code);
+if [ ! -f "$ROOT/vendor/bin/phpunit" ]; then
+    echo "PHPUnit not found. Run: composer install" >&2
+    exit 1
+fi
+
+# Stop anything on port 8000 and start a test server in its place
+lsof -ti:8000 | xargs kill 2>/dev/null || true
+sleep 0.3
+
+APP_ENV=test php -S localhost:8000 "$ROOT/router.php" >/dev/null 2>&1 &
+SERVER_PID=$!
+sleep 0.8
+
+"$ROOT/vendor/bin/phpunit" "$@"

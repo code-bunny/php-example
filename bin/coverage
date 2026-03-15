@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -e
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+TMP="$(php -r 'echo sys_get_temp_dir();')"
+SERVER_PID=""
+
+cleanup() {
+    [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
+# ── Clear old coverage data ───────────────────────────────────────────────────
+rm -f "$TMP"/phpcov_*.json
+rm -rf "$ROOT/coverage"
+
+# ── Stop anything on port 8000 and start a coverage-enabled server ────────────
+lsof -ti:8000 | xargs kill 2>/dev/null || true
+sleep 0.3
+
+echo "Starting coverage server on localhost:8000..."
+APP_ENV=test XDEBUG_MODE=coverage php -S localhost:8000 "$ROOT/router.php" >/dev/null 2>&1 &
+SERVER_PID=$!
+sleep 0.8
+
+# ── Run all tests ─────────────────────────────────────────────────────────────
+# Unit tests collect in-process coverage; request tests hit the coverage server.
+XDEBUG_MODE=coverage "$ROOT/vendor/bin/phpunit" "$@"
+
+# ── Stop the coverage server ──────────────────────────────────────────────────
+kill "$SERVER_PID" 2>/dev/null || true
+SERVER_PID=""
+sleep 0.3
+
+# ── Merge all coverage JSON files and generate the HTML report ────────────────
+echo ""
+echo "Generating coverage report..."
+php "$ROOT/bin/merge-coverage"
+
+open "$ROOT/coverage/index.html" 2>/dev/null || true

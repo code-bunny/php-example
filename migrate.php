@@ -24,8 +24,8 @@ if (empty($pending)) {
 foreach ($pending as $file) {
     $name = basename($file);
     echo "Running: $name ... ";
-    require $file;
-    up($pdo);
+    $migration = require $file;
+    $migration($pdo);
     $pdo->prepare("INSERT INTO migrations (migration) VALUES (?)")->execute([$name]);
     echo "done\n";
 }

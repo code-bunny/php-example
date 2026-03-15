@@ -3,12 +3,23 @@
 class SubscribersTest extends \TestCase
 {
     private array $created = [];
+    private string $prefix;
+
+    protected function setUp(): void
+    {
+        $this->prefix = bin2hex(random_bytes(4));
+    }
 
     protected function tearDown(): void
     {
         foreach ($this->created as $id) {
             $this->delete("/api/v1/subscribers/$id");
         }
+    }
+
+    private function email(string $name): string
+    {
+        return "$name+{$this->prefix}@example.com";
     }
 
     public function test_get_subscribers_returns_ok(): void
@@ -18,22 +29,23 @@ class SubscribersTest extends \TestCase
 
     public function test_create_subscriber(): void
     {
+        $email = $this->email('sub');
         $response = $this->post('/api/v1/subscribers', [
-            'data' => ['type' => 'subscribers', 'attributes' => ['email' => 'sub@example.com']],
+            'data' => ['type' => 'subscribers', 'attributes' => ['email' => $email]],
         ]);
 
         $response->assertCreated()
-            ->assertJsonPath('data.attributes.email', 'sub@example.com');
+            ->assertJsonPath('data.attributes.email', $email);
 
         $this->created[] = $response->json['data']['id'];
     }
 
     public function test_duplicate_email_returns_409(): void
     {
-        $id = $this->createSubscriber('dup@example.com');
+        $id = $this->createSubscriber($this->email('dup'));
 
         $this->post('/api/v1/subscribers', [
-            'data' => ['type' => 'subscribers', 'attributes' => ['email' => 'dup@example.com']],
+            'data' => ['type' => 'subscribers', 'attributes' => ['email' => $this->email('dup')]],
         ])->assertStatus(409);
     }
 
@@ -46,7 +58,7 @@ class SubscribersTest extends \TestCase
 
     public function test_show_subscriber(): void
     {
-        $id = $this->createSubscriber('show@example.com');
+        $id = $this->createSubscriber($this->email('show'));
 
         $this->get("/api/v1/subscribers/$id")
             ->assertOk()
@@ -61,13 +73,13 @@ class SubscribersTest extends \TestCase
 
     public function test_delete_subscriber(): void
     {
-        $id = $this->createSubscriber('del@example.com');
+        $id = $this->createSubscriber($this->email('del'));
 
         $this->delete("/api/v1/subscribers/$id")->assertNoContent();
         $this->get("/api/v1/subscribers/$id")->assertStatus(404);
     }
 
-    private function createSubscriber(string $email = 'sub@example.com'): string
+    private function createSubscriber(string $email): string
     {
         $response = $this->post('/api/v1/subscribers', [
             'data' => ['type' => 'subscribers', 'attributes' => ['email' => $email]],

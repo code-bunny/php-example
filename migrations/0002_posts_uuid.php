@@ -1,6 +1,6 @@
 <?php
 
-function up(PDO $pdo): void {
+return function (PDO $pdo): void {
     // Add uuid column if it doesn't already exist
     $columns = $pdo->query("SHOW COLUMNS FROM posts LIKE 'uuid'")->fetchAll();
     if (empty($columns)) {
@@ -20,4 +20,4 @@ function up(PDO $pdo): void {
         $pdo->exec("ALTER TABLE posts MODIFY COLUMN id CHAR(36) NOT NULL FIRST");
         $pdo->exec("ALTER TABLE posts ADD PRIMARY KEY (id)");
     }
-}
+};

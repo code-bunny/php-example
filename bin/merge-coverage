@@ -1,0 +1,68 @@
+#!/usr/bin/env php
+<?php
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\Data\RawCodeCoverageData;
+use SebastianBergmann\CodeCoverage\Driver\Driver;
+use SebastianBergmann\CodeCoverage\Filter;
+use SebastianBergmann\CodeCoverage\Report\Html\Facade as HtmlReport;
+
+$root = dirname(__DIR__);
+
+// ── Filter: which files appear in the report ─────────────────────────────────
+$filter = new Filter();
+
+$dirs = ['models', 'helpers', 'pages'];
+$phpFiles = [realpath($root . '/index.php')];
+foreach ($dirs as $dir) {
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator("$root/$dir"));
+    foreach ($it as $file) {
+        if ($file->isFile() && $file->getExtension() === 'php') {
+            $phpFiles[] = $file->getRealPath();
+        }
+    }
+}
+$filter->includeFiles($phpFiles);
+
+// ── Load all coverage JSON files written by the server and unit test process ──
+$files = glob(sys_get_temp_dir() . '/phpcov_*.json');
+
+if (empty($files)) {
+    fwrite(STDERR, "No coverage data found. Run: bin/coverage\n");
+    exit(1);
+}
+
+// A do-nothing driver — we are merging pre-collected data, not instrumenting live
+$coverage = new CodeCoverage(new class extends Driver {
+    public function nameAndVersion(): string { return 'null'; }
+    public function start(): void            {}
+    public function stop(): RawCodeCoverageData
+    {
+        return RawCodeCoverageData::fromXdebugWithoutPathCoverage([]);
+    }
+}, $filter);
+
+foreach ($files as $jsonFile) {
+    $raw = json_decode(file_get_contents($jsonFile), true);
+    if (!$raw) continue;
+
+    // JSON encodes integer keys as strings — restore them
+    $fixed = [];
+    foreach ($raw as $filePath => $lines) {
+        foreach ($lines as $line => $state) {
+            $fixed[$filePath][(int) $line] = $state;
+        }
+    }
+
+    $coverage->append(
+        RawCodeCoverageData::fromXdebugWithoutPathCoverage($fixed),
+        basename($jsonFile, '.json'),
+    );
+}
+
+// ── Generate HTML report ──────────────────────────────────────────────────────
+$reportDir = $root . '/coverage';
+(new HtmlReport())->process($coverage, $reportDir);
+echo "Coverage report: file://$reportDir/index.html\n";

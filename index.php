@@ -1,5 +1,18 @@
 <?php
 
+// When bin/coverage starts the server with XDEBUG_MODE=coverage, collect
+// per-request coverage data and write it to a temp file for later merging.
+$xdebugMode = getenv('XDEBUG_MODE') ?: ini_get('xdebug.mode');
+if (function_exists('xdebug_start_code_coverage') && str_contains($xdebugMode, 'coverage')) {
+    xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
+    register_shutdown_function(function () {
+        file_put_contents(
+            sys_get_temp_dir() . '/phpcov_request_' . uniqid() . '.json',
+            json_encode(xdebug_get_code_coverage()),
+        );
+    });
+}
+
 require_once 'helpers/env.php';
 load_env(__DIR__ . '/.env');
 

@@ -5,11 +5,11 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mydb
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
     volumes:
       - db_data:/var/lib/mysql
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   swagger:
     image: swaggerapi/swagger-ui

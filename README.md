@@ -107,6 +107,20 @@ bin/test --filter test_create_post
 
 Tests clean up after themselves — any records created during a test are deleted when it finishes.
 
+To generate an HTML coverage report (opens automatically in the browser):
+
+```bash
+bin/coverage
+```
+
+Or just see the numbers in the terminal without opening a browser:
+
+```bash
+bin/test --testsuite Unit --coverage-text
+```
+
+`bin/coverage` handles everything automatically: it starts a temporary coverage-enabled server, runs all tests, then merges the coverage data collected from both the test process (unit tests) and the server process (request tests) into a single report.
+
 ## API Keys
 
 All API endpoints require a Bearer token. To generate one:
