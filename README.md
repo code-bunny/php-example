@@ -46,40 +46,21 @@ pecl install xdebug
 
 ## Setup
 
-```bash
-cp .env.example .env
-```
-
-The defaults work with the Docker setup below. Edit `.env` before deploying.
-
-Start the database (MySQL) and phpMyAdmin:
+Do this once after cloning:
 
 ```bash
-docker compose up -d
-```
-
-Install PHP dependencies:
-
-```bash
+cp .env.example .env   # defaults work out of the box with Docker
 composer install
-```
-
-Run migrations (also writes `db/schema.php`):
-
-```bash
+docker compose up -d
 bin/migrate
+php db/seeds.php       # sample data + first admin user (admin@example.com / password)
 ```
 
-Seed the database with sample data and the first admin user:
+## Running
 
 ```bash
-php db/seeds.php
-```
-
-Start the dev server:
-
-```bash
-bin/serve
+docker compose up -d   # start MySQL + phpMyAdmin (if not already running)
+bin/serve              # http://localhost:8000
 ```
 
 | URL | Description |
