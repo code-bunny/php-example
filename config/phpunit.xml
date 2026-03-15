@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="tests/bootstrap.php"
+         xsi:noNamespaceSchemaLocation="../vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="../tests/bootstrap.php"
          colors="true">
     <testsuites>
         <testsuite name="Unit">
-            <directory>tests/unit</directory>
+            <directory>../tests/unit</directory>
         </testsuite>
         <testsuite name="API">
-            <directory>tests/api</directory>
+            <directory>../tests/api</directory>
         </testsuite>
         <testsuite name="Pages">
-            <directory>tests/pages</directory>
+            <directory>../tests/pages</directory>
         </testsuite>
     </testsuites>
 
@@ -23,8 +23,8 @@
             instrumented here. Scope coverage to what unit tests can actually reach.
         -->
         <include>
-            <directory>models</directory>
-            <directory>helpers</directory>
+            <directory>../app/models</directory>
+            <directory>../app/helpers</directory>
         </include>
     </source>
 </phpunit>

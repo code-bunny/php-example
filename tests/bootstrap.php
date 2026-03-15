@@ -9,7 +9,7 @@ require_once __DIR__ . '/../lib/env.php';
 load_env(__DIR__ . '/../.env');
 
 require_once __DIR__ . '/../lib/logger.php';
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/models/ApiKey.php';
 require_once __DIR__ . '/../app/models/User.php';
 Model::setDb($pdo);
@@ -35,8 +35,8 @@ if ($sock) {
     $root = dirname(__DIR__);
     $xdebugMode = getenv('XDEBUG_MODE') ?: ini_get('xdebug.mode');
     $cmd = str_contains($xdebugMode, 'coverage')
-        ? "APP_ENV=test XDEBUG_MODE=coverage php -S localhost:$testPort $root/router.php"
-        : "APP_ENV=test php -S localhost:$testPort $root/router.php";
+        ? "APP_ENV=test XDEBUG_MODE=coverage php -S localhost:$testPort $root/bin/router.php"
+        : "APP_ENV=test php -S localhost:$testPort $root/bin/router.php";
     $serverPid = exec("$cmd >/dev/null 2>&1 & echo \$!", $out);
     usleep(800_000);
 

@@ -67,13 +67,13 @@ composer install
 Run migrations:
 
 ```bash
-php migrate.php
+bin/migrate
 ```
 
 Seed the database with sample data and the first admin user:
 
 ```bash
-php seeds.php
+php db/seeds.php
 ```
 
 Start the dev server:
@@ -308,7 +308,7 @@ The table name is taken directly from the `To<Table>` / `From<Table>` suffix —
 After generating a migration, run it:
 
 ```bash
-php migrate.php
+bin/migrate
 ```
 
 ### Notes
@@ -355,18 +355,22 @@ The app follows the Rails convention — `DB_NAME` in `.env` is the base name an
 Run migrations against both:
 
 ```bash
-php migrate.php
-APP_ENV=test php migrate.php
+bin/migrate
+APP_ENV=test bin/migrate
 ```
 
 ## Project structure
 
 ```
-├── index.php              # Front controller — all requests go through here
-├── router.php             # PHP built-in server router
-├── migrate.php            # Runs pending migrations
-├── seeds.php              # Seeds sample data and the first admin user
-├── db.php                 # Database connection
+├── index.php              # Front controller — bootstrap, middleware, API dispatch
+├── config/
+│   ├── database.php       # Database connection (PDO)
+│   ├── routes.php         # URL → controller routing (HTML + admin)
+│   ├── openapi.yaml       # OpenAPI specification (served at /openapi.yaml)
+│   └── phpunit.xml        # PHPUnit configuration
+├── db/
+│   ├── seeds.php          # Seeds sample data and the first admin user
+│   └── migrations/        # Versioned schema migrations
 ├── app/
 │   ├── api/               # JSON:API layer
 │   │   ├── Route.php      # Static router + DSL global functions
@@ -383,13 +387,14 @@ APP_ENV=test php migrate.php
 │       ├── admin/         # Admin panel views
 │       └── …              # Public views (home, blog, contact, posts…)
 ├── lib/                   # Framework-level utilities (csrf, flash, auth, rate limiting…)
-├── migrations/            # Versioned schema migrations
 ├── tests/                 # PHPUnit test suite
 │   ├── unit/              # In-process unit tests
 │   ├── api/v1/            # Request tests for the JSON:API
 │   └── pages/             # Request tests for HTML pages (including admin)
 ├── bin/
 │   ├── serve              # Start the dev server (localhost:8000)
+│   ├── router.php         # PHP built-in server router (used by bin/serve and tests)
+│   ├── migrate            # Run pending migrations
 │   ├── console            # Interactive shell (PsySH)
 │   ├── test               # Run the test suite
 │   ├── coverage           # Run tests and generate an HTML coverage report

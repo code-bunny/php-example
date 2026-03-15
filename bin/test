@@ -8,4 +8,4 @@ if [ ! -f "$ROOT/vendor/bin/phpunit" ]; then
     exit 1
 fi
 
-APP_URL=http://localhost:8001 "$ROOT/vendor/bin/phpunit" "$@"
+APP_URL=http://localhost:8001 "$ROOT/vendor/bin/phpunit" -c "$ROOT/config/phpunit.xml" "$@"

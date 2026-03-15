@@ -9,7 +9,7 @@ require_once $root . '/lib/env.php';
 load_env($root . '/.env');
 
 require_once $root . '/lib/logger.php';
-require_once $root . '/db.php';
+require_once $root . '/config/database.php';
 require_once $root . '/app/models/Post.php';
 require_once $root . '/app/models/Contact.php';
 require_once $root . '/app/models/Subscriber.php';

@@ -44,7 +44,7 @@ PHP);
     // Migration file
     $number    = nextMigrationNumber();
     $slug      = 'create_' . $table;
-    $migPath   = APP_ROOT . "/migrations/{$number}_{$slug}.php";
+    $migPath   = APP_ROOT . "/db/migrations/{$number}_{$slug}.php";
     $columns   = migrationColumns($fields);
     $sep       = $columns ? "\n" : '';
     writeFile($migPath, <<<PHP
@@ -220,7 +220,7 @@ PHP);
 
 function appendRoutes(string $class, string $route, array $actions): void
 {
-    $indexPath = APP_ROOT . '/index.php';
+    $indexPath = APP_ROOT . '/config/routes.php';
     $contents  = file_get_contents($indexPath);
     $original  = $contents;
     $file      = "app/controllers/{$class}.php";
@@ -296,7 +296,7 @@ function generateMigration(string $name, array $fields): void
 {
     $number = nextMigrationNumber();
     $slug   = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
-    $path   = APP_ROOT . "/migrations/{$number}_{$slug}.php";
+    $path   = APP_ROOT . "/db/migrations/{$number}_{$slug}.php";
     $body   = migrationBody($name, $fields);
 
     writeFile($path, <<<PHP
@@ -409,7 +409,7 @@ function migrationColumns(array $fields): string
 
 function nextMigrationNumber(): string
 {
-    $files   = glob(APP_ROOT . '/migrations/*.php') ?: [];
+    $files   = glob(APP_ROOT . '/db/migrations/*.php') ?: [];
     $numbers = array_map(fn($f) => (int) basename($f), $files);
     $next    = empty($numbers) ? 1 : max($numbers) + 1;
     return str_pad($next, 4, '0', STR_PAD_LEFT);

@@ -9,7 +9,7 @@ rm -f "$TMP"/phpcov_*.json
 rm -rf "$ROOT/coverage"
 
 # ── Run all tests with coverage enabled ──────────────────────────────────────
-APP_URL=http://localhost:8001 XDEBUG_MODE=coverage "$ROOT/vendor/bin/phpunit" "$@"
+APP_URL=http://localhost:8001 XDEBUG_MODE=coverage "$ROOT/vendor/bin/phpunit" -c "$ROOT/config/phpunit.xml" "$@"
 
 # ── Merge all coverage JSON files and generate the HTML report ────────────────
 echo ""

@@ -1,13 +1,13 @@
 <?php
 
-// Load .env for CLI scripts (migrate.php, seeds.php).
+// Load .env for CLI scripts (db/migrate.php, db/seeds.php).
 // When called from index.php the env is already loaded.
 if (empty($_ENV['DB_HOST'])) {
-    require_once __DIR__ . '/lib/env.php';
-    load_env(__DIR__ . '/.env');
+    require_once __DIR__ . '/../lib/env.php';
+    load_env(__DIR__ . '/../.env');
 }
 
-require_once __DIR__ . '/lib/logger.php';
+require_once __DIR__ . '/../lib/logger.php';
 
 // Follow the Rails convention: mydb_development / mydb_test
 $appEnv = $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: 'development';

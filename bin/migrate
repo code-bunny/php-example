@@ -1,6 +1,7 @@
+#!/usr/bin/env php
 <?php
 
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Ensure migrations tracking table exists
 $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
@@ -11,7 +12,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
 
 $ran = $pdo->query("SELECT migration FROM migrations")->fetchAll(PDO::FETCH_COLUMN);
 
-$files = glob(__DIR__ . '/migrations/*.php');
+$files = glob(__DIR__ . '/../db/migrations/*.php');
 sort($files);
 
 $pending = array_filter($files, fn($f) => !in_array(basename($f), $ran));
