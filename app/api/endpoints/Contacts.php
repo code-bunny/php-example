@@ -1,6 +1,7 @@
 <?php
 
 require_once APP_ROOT . '/app/models/Contact.php';
+require_once APP_ROOT . '/app/api/serializers/ContactSerializer.php';
 
 resource('contacts', function () {
 
@@ -10,7 +11,7 @@ resource('contacts', function () {
         $last  = max(1, (int) ceil($total / $page['size']));
 
         return [
-            'data'  => array_map(presentContact(...), Contact::paginate($page['size'], $page['offset'])),
+            'data'  => ContactSerializer::many(Contact::paginate($page['size'], $page['offset'])),
             'links' => paginationLinks('/api/v1/contacts', $page['number'], $last, $page['size']),
             'meta'  => ['total' => $total],
         ];
@@ -30,7 +31,7 @@ resource('contacts', function () {
         $contact = new Contact(['email' => $attrs['email'], 'message' => $attrs['message']]);
         $contact->save();
 
-        return [['data' => presentContact($contact), 'links' => ['self' => '/api/v1/contacts/' . $contact->id]], 201];
+        return [['data' => ContactSerializer::one($contact)], 201];
     });
 
     routeParam(':id', function () {
@@ -39,7 +40,7 @@ resource('contacts', function () {
             $contact = Contact::find(param('id'));
             if (!$contact) notFound('Contact not found.');
 
-            return ['data' => presentContact($contact), 'links' => ['self' => '/api/v1/contacts/' . $contact->id]];
+            return ['data' => ContactSerializer::one($contact)];
         });
 
         patch(function () {
@@ -57,7 +58,7 @@ resource('contacts', function () {
             if (isset($attrs['message'])) $contact->message = $attrs['message'];
             $contact->save();
 
-            return ['data' => presentContact($contact), 'links' => ['self' => '/api/v1/contacts/' . $contact->id]];
+            return ['data' => ContactSerializer::one($contact)];
         });
 
         delete(function () {
@@ -71,17 +72,3 @@ resource('contacts', function () {
     });
 
 });
-
-function presentContact(object $contact): array
-{
-    return [
-        'type'       => 'contacts',
-        'id'         => (string) $contact->id,
-        'attributes' => [
-            'email'     => $contact->email,
-            'message'   => $contact->message,
-            'createdAt' => $contact->created_at,
-        ],
-        'links' => ['self' => '/api/v1/contacts/' . $contact->id],
-    ];
-}

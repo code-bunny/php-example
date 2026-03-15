@@ -1,6 +1,7 @@
 <?php
 
 require_once APP_ROOT . '/app/models/Subscriber.php';
+require_once APP_ROOT . '/app/api/serializers/SubscriberSerializer.php';
 
 resource('subscribers', function () {
 
@@ -10,7 +11,7 @@ resource('subscribers', function () {
         $last  = max(1, (int) ceil($total / $page['size']));
 
         return [
-            'data'  => array_map(presentSubscriber(...), Subscriber::paginate($page['size'], $page['offset'])),
+            'data'  => SubscriberSerializer::many(Subscriber::paginate($page['size'], $page['offset'])),
             'links' => paginationLinks('/api/v1/subscribers', $page['number'], $last, $page['size']),
             'meta'  => ['total' => $total],
         ];
@@ -31,7 +32,7 @@ resource('subscribers', function () {
         $subscriber = new Subscriber(['email' => $attrs['email']]);
         $subscriber->save();
 
-        return [['data' => presentSubscriber($subscriber), 'links' => ['self' => '/api/v1/subscribers/' . $subscriber->id]], 201];
+        return [['data' => SubscriberSerializer::one($subscriber)], 201];
     });
 
     routeParam(':id', function () {
@@ -40,7 +41,7 @@ resource('subscribers', function () {
             $subscriber = Subscriber::find(param('id'));
             if (!$subscriber) notFound('Subscriber not found.');
 
-            return ['data' => presentSubscriber($subscriber), 'links' => ['self' => '/api/v1/subscribers/' . $subscriber->id]];
+            return ['data' => SubscriberSerializer::one($subscriber)];
         });
 
         patch(function () {
@@ -57,7 +58,7 @@ resource('subscribers', function () {
             if (isset($attrs['email'])) $subscriber->email = $attrs['email'];
             $subscriber->save();
 
-            return ['data' => presentSubscriber($subscriber), 'links' => ['self' => '/api/v1/subscribers/' . $subscriber->id]];
+            return ['data' => SubscriberSerializer::one($subscriber)];
         });
 
         delete(function () {
@@ -71,16 +72,3 @@ resource('subscribers', function () {
     });
 
 });
-
-function presentSubscriber(object $subscriber): array
-{
-    return [
-        'type'       => 'subscribers',
-        'id'         => (string) $subscriber->id,
-        'attributes' => [
-            'email'     => $subscriber->email,
-            'createdAt' => $subscriber->created_at,
-        ],
-        'links' => ['self' => '/api/v1/subscribers/' . $subscriber->id],
-    ];
-}

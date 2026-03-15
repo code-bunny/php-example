@@ -1,6 +1,7 @@
 <?php
 
 require_once APP_ROOT . '/app/models/Post.php';
+require_once APP_ROOT . '/app/api/serializers/PostSerializer.php';
 
 resource('posts', function () {
 
@@ -10,7 +11,7 @@ resource('posts', function () {
         $last  = max(1, (int) ceil($total / $page['size']));
 
         return [
-            'data'  => array_map(presentPost(...), Post::paginate($page['size'], $page['offset'])),
+            'data'  => PostSerializer::many(Post::paginate($page['size'], $page['offset'])),
             'links' => paginationLinks('/api/v1/posts', $page['number'], $last, $page['size']),
             'meta'  => ['total' => $total],
         ];
@@ -26,7 +27,7 @@ resource('posts', function () {
         $post = new Post(['title' => $attrs['title'], 'body' => $attrs['body']]);
         $post->save();
 
-        return [['data' => presentPost($post), 'links' => ['self' => '/api/v1/posts/' . $post->id]], 201];
+        return [['data' => PostSerializer::one($post)], 201];
     });
 
     routeParam(':id', function () {
@@ -35,7 +36,7 @@ resource('posts', function () {
             $post = Post::find(param('id'));
             if (!$post) notFound('Post not found.');
 
-            return ['data' => presentPost($post), 'links' => ['self' => '/api/v1/posts/' . $post->id]];
+            return ['data' => PostSerializer::one($post)];
         });
 
         patch(function () {
@@ -47,7 +48,7 @@ resource('posts', function () {
             if (isset($attrs['body']))  $post->body  = $attrs['body'];
             $post->save();
 
-            return ['data' => presentPost($post), 'links' => ['self' => '/api/v1/posts/' . $post->id]];
+            return ['data' => PostSerializer::one($post)];
         });
 
         delete(function () {
@@ -61,18 +62,3 @@ resource('posts', function () {
     });
 
 });
-
-function presentPost(object $post): array
-{
-    return [
-        'type'       => 'posts',
-        'id'         => (string) $post->id,
-        'attributes' => [
-            'title'     => $post->title,
-            'body'      => $post->body,
-            'createdAt' => $post->created_at,
-            'updatedAt' => $post->updated_at,
-        ],
-        'links' => ['self' => '/api/v1/posts/' . $post->id],
-    ];
-}

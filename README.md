@@ -164,9 +164,13 @@ APP_ENV=test php migrate.php
 ├── seeds.php              # Seeds sample data and the first admin user
 ├── db.php                 # Database connection
 ├── app/
-│   ├── controllers/       # Request handling and business logic
-│   │   ├── admin/         # Admin panel controllers
-│   │   └── api/           # JSON:API resource controllers
+│   ├── api/               # JSON:API layer
+│   │   ├── Route.php      # Static router + DSL global functions
+│   │   ├── Api.php        # Loads all endpoint files
+│   │   ├── endpoints/     # One file per resource (Posts, Contacts, Subscribers)
+│   │   └── serializers/   # JSON:API serializers
+│   ├── controllers/       # HTML controllers (public + admin)
+│   │   └── admin/
 │   ├── models/            # Model classes (Post, Contact, Subscriber, ApiKey, User)
 │   └── views/
 │       ├── layouts/       # public.php and admin.php layouts
