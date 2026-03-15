@@ -5,13 +5,13 @@ $_ENV['APP_ENV'] = 'test';
 putenv('APP_ENV=test');
 
 // Load environment variables and helpers
-require_once __DIR__ . '/../helpers/env.php';
+require_once __DIR__ . '/../lib/env.php';
 load_env(__DIR__ . '/../.env');
 
-require_once __DIR__ . '/../helpers/logger.php';
+require_once __DIR__ . '/../lib/logger.php';
 require_once __DIR__ . '/../db.php';
-require_once __DIR__ . '/../models/ApiKey.php';
-require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../app/models/ApiKey.php';
+require_once __DIR__ . '/../app/models/User.php';
 Model::setDb($pdo);
 
 // Load test base classes

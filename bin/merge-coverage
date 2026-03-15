@@ -14,7 +14,7 @@ $root = dirname(__DIR__);
 // ── Filter: which files appear in the report ─────────────────────────────────
 $filter = new Filter();
 
-$dirs = ['models', 'helpers', 'pages'];
+$dirs = ['app', 'lib'];
 $phpFiles = [realpath($root . '/index.php')];
 foreach ($dirs as $dir) {
     $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator("$root/$dir"));

@@ -8,7 +8,7 @@ class EnvHelperTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        require_once __DIR__ . '/../../helpers/env.php';
+        require_once __DIR__ . '/../../lib/env.php';
     }
 
     protected function setUp(): void

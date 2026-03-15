@@ -10,9 +10,9 @@ class ModelTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        require_once __DIR__ . '/../../helpers/logger.php';
-        require_once __DIR__ . '/../../models/Model.php';
-        require_once __DIR__ . '/../../models/Post.php';
+        require_once __DIR__ . '/../../lib/logger.php';
+        require_once __DIR__ . '/../../app/models/Model.php';
+        require_once __DIR__ . '/../../app/models/Post.php';
 
         self::$db = new \PDO('sqlite::memory:', options: [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
         self::$db->exec("

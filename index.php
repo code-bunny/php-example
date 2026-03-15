@@ -13,10 +13,12 @@ if (function_exists('xdebug_start_code_coverage') && str_contains($xdebugMode, '
     });
 }
 
-require_once 'helpers/env.php';
+require_once __DIR__ . '/lib/env.php';
 load_env(__DIR__ . '/.env');
 
-require_once 'helpers/logger.php';
+define('APP_ROOT', __DIR__);
+
+require_once APP_ROOT . '/lib/logger.php';
 start_request_log();
 
 // Show errors in development; log silently in production
@@ -28,14 +30,17 @@ if (($_ENV['APP_ENV'] ?? 'development') === 'production') {
     ini_set('display_errors', '1');
 }
 
-require_once 'models/Post.php';
-require_once 'models/Contact.php';
-require_once 'models/Subscriber.php';
-require_once 'models/ApiKey.php';
-require_once 'helpers/csrf.php';
-require_once 'helpers/flash.php';
-require_once 'helpers/rate_limit.php';
+require_once APP_ROOT . '/app/models/Post.php';
+require_once APP_ROOT . '/app/models/Contact.php';
+require_once APP_ROOT . '/app/models/Subscriber.php';
+require_once APP_ROOT . '/app/models/ApiKey.php';
+require_once APP_ROOT . '/lib/csrf.php';
+require_once APP_ROOT . '/lib/flash.php';
+require_once APP_ROOT . '/lib/rate_limit.php';
 csrf_start();
+
+require_once 'db.php';
+Model::setDb($pdo);
 
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
@@ -64,14 +69,12 @@ if (str_starts_with($path, '/api/')) {
         exit;
     }
 
-    require_once 'db.php';
-    Model::setDb($pdo);
-    require_once 'helpers/api_auth.php';
+    require_once APP_ROOT . '/lib/api_auth.php';
     api_authenticate();
-    require_once 'pages/api/ApiResource.php';
-    require_once 'pages/api/v1/PostsResource.php';
-    require_once 'pages/api/v1/ContactsResource.php';
-    require_once 'pages/api/v1/SubscribersResource.php';
+    require_once APP_ROOT . '/app/controllers/api/ApiResource.php';
+    require_once APP_ROOT . '/app/controllers/api/v1/PostsResource.php';
+    require_once APP_ROOT . '/app/controllers/api/v1/ContactsResource.php';
+    require_once APP_ROOT . '/app/controllers/api/v1/SubscribersResource.php';
 }
 
 // API routes — respond directly, no layout
@@ -109,14 +112,16 @@ if ($path === '/api' || str_starts_with($path, '/api/')) {
 
 // Admin routes
 if ($path === '/admin' || str_starts_with($path, '/admin/')) {
-    require_once 'db.php';
-    Model::setDb($pdo);
-    require_once 'models/User.php';
-    require_once 'helpers/admin_auth.php';
+    require_once APP_ROOT . '/app/models/User.php';
+    require_once APP_ROOT . '/lib/admin_auth.php';
 
     // Login — no auth required
     if ($path === '/admin/login') {
-        require 'pages/admin/login.php';
+        require_once APP_ROOT . '/app/controllers/admin/LoginController.php';
+        $ctrl    = new LoginController();
+        $content = $ctrl->index();
+        $title   = $ctrl->title;
+        require APP_ROOT . '/app/views/layouts/admin.php';
         exit;
     }
 
@@ -157,78 +162,104 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
         exit;
     }
 
-    ob_start();
-
     if ($path === '/admin') {
-        require 'pages/admin/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/DashboardController.php';
+        $ctrl    = new DashboardController();
+        $content = $ctrl->index();
     } elseif ($path === '/admin/posts') {
-        require 'pages/admin/posts/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminPostsController.php';
+        $ctrl    = new AdminPostsController();
+        $content = $ctrl->index();
     } elseif ($path === '/admin/posts/new') {
-        require 'pages/admin/posts/edit.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminPostsController.php';
+        $ctrl    = new AdminPostsController();
+        $content = $ctrl->create();
     } elseif (preg_match('#^/admin/posts/([0-9a-f-]{36})/edit$#', $path, $matches)) {
-        $id = $matches[1];
-        require 'pages/admin/posts/edit.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminPostsController.php';
+        $ctrl    = new AdminPostsController();
+        $content = $ctrl->edit($matches[1]);
     } elseif ($path === '/admin/contacts') {
-        require 'pages/admin/contacts/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminContactsController.php';
+        $ctrl    = new AdminContactsController();
+        $content = $ctrl->index();
     } elseif (preg_match('#^/admin/contacts/([0-9a-f-]{36})$#', $path, $matches)) {
-        $id = $matches[1];
-        require 'pages/admin/contacts/show.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminContactsController.php';
+        $ctrl    = new AdminContactsController();
+        $content = $ctrl->show($matches[1]);
     } elseif ($path === '/admin/subscribers') {
-        require 'pages/admin/subscribers/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminSubscribersController.php';
+        $ctrl    = new AdminSubscribersController();
+        $content = $ctrl->index();
     } elseif ($path === '/admin/api_keys') {
-        require 'pages/admin/api_keys/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminApiKeysController.php';
+        $ctrl    = new AdminApiKeysController();
+        $content = $ctrl->index();
     } elseif ($path === '/admin/users') {
-        require 'pages/admin/users/index.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminUsersController.php';
+        $ctrl    = new AdminUsersController();
+        $content = $ctrl->index();
     } elseif ($path === '/admin/users/new') {
-        require 'pages/admin/users/edit.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminUsersController.php';
+        $ctrl    = new AdminUsersController();
+        $content = $ctrl->create();
     } elseif (preg_match('#^/admin/users/([0-9a-f-]{36})/edit$#', $path, $matches)) {
-        $id = $matches[1];
-        require 'pages/admin/users/edit.php';
+        require_once APP_ROOT . '/app/controllers/admin/AdminUsersController.php';
+        $ctrl    = new AdminUsersController();
+        $content = $ctrl->edit($matches[1]);
     } else {
         http_response_code(404);
-        $title = '404';
-        echo '<h1 class="text-2xl font-bold">Admin page not found</h1>';
+        $ctrl    = new class { public string $title = '404'; };
+        $content = '<h1 class="text-2xl font-bold">Admin page not found</h1>';
     }
 
-    $content = ob_get_clean();
-    require 'admin_layout.php';
+    $title = $ctrl->title;
+    require APP_ROOT . '/app/views/layouts/admin.php';
     exit;
 }
 
 // HTML routes
-ob_start();
-
 switch ($path) {
     case '/':
-        require 'pages/home.php';
+        require_once APP_ROOT . '/app/controllers/HomeController.php';
+        $ctrl    = new HomeController();
+        $content = $ctrl->index();
         break;
 
     case '/blog':
-        require 'pages/blog.php';
+        require_once APP_ROOT . '/app/controllers/BlogController.php';
+        $ctrl    = new BlogController();
+        $content = $ctrl->index();
         break;
 
     case '/about':
-        require 'pages/about.php';
+        require_once APP_ROOT . '/app/controllers/AboutController.php';
+        $ctrl    = new AboutController();
+        $content = $ctrl->index();
         break;
 
     case '/contact':
-        require 'pages/contact.php';
+        require_once APP_ROOT . '/app/controllers/ContactController.php';
+        $ctrl    = new ContactController();
+        $content = $ctrl->index();
         break;
 
     case '/subscribe':
-        require 'pages/subscribe.php';
+        require_once APP_ROOT . '/app/controllers/SubscribeController.php';
+        $ctrl = new SubscribeController();
+        $ctrl->store(); // never returns
         break;
 
     default:
         if (preg_match('#^/posts/([0-9a-f-]{36})$#', $path, $matches)) {
-            $id = $matches[1];
-            require 'pages/posts/show.php';
+            require_once APP_ROOT . '/app/controllers/PostsController.php';
+            $ctrl    = new PostsController();
+            $content = $ctrl->show($matches[1]);
         } else {
             http_response_code(404);
-            $title = '404';
-            echo '<h1 class="text-2xl font-bold">Page not found</h1>';
+            $ctrl    = new class { public string $title = '404'; };
+            $content = '<h1 class="text-2xl font-bold">Page not found</h1>';
         }
 }
 
-$content = ob_get_clean();
-require 'layout.php';
+$title = $ctrl->title;
+require APP_ROOT . '/app/views/layouts/public.php';

@@ -6,7 +6,7 @@ This is intended for a student who is learning PHP to build up their own system,
 
 If you want to build something simpler to start from, go back to the first commit in the repository where the first building blocks are demonstrated.
 
-For a real application, you'd want to go MVC and use one of the off-the-shelf frameworks. Ideally, you'd want to not use PHP and go for Ruby on Rails, but if PHP is your cuppa tea, I don't stop you.
+If you want to go further, use one of the off-the-shelf frameworks. Ideally Ruby on Rails, but if PHP is your cuppa tea, Laravel is the way to go.
 
 ## Prerequisites
 
@@ -158,25 +158,33 @@ APP_ENV=test php migrate.php
 ## Project structure
 
 ```
-├── index.php          # Front controller — all requests go through here
-├── router.php         # PHP built-in server router
-├── migrate.php        # Runs pending migrations
-├── seeds.php          # Seeds sample data and the first admin user
-├── models/            # Model classes (Post, Contact, Subscriber, ApiKey, User)
-├── pages/             # Page templates
-│   ├── admin/         # Admin panel pages
-│   └── api/           # JSON:API resource handlers
-├── helpers/           # csrf, flash, rate limiting, auth, env, logging
-├── migrations/        # Versioned schema migrations
-├── tests/             # PHPUnit test suite
-│   ├── unit/          # In-process unit tests
-│   ├── api/v1/        # Request tests for the JSON:API
-│   └── pages/         # Request tests for HTML pages (including admin)
+├── index.php              # Front controller — all requests go through here
+├── router.php             # PHP built-in server router
+├── migrate.php            # Runs pending migrations
+├── seeds.php              # Seeds sample data and the first admin user
+├── db.php                 # Database connection
+├── app/
+│   ├── controllers/       # Request handling and business logic
+│   │   ├── admin/         # Admin panel controllers
+│   │   └── api/           # JSON:API resource controllers
+│   ├── models/            # Model classes (Post, Contact, Subscriber, ApiKey, User)
+│   └── views/
+│       ├── layouts/       # public.php and admin.php layouts
+│       ├── components/    # Reusable view helpers (icons, pagination, forms…)
+│       ├── shared/        # _header.php, _footer.php
+│       ├── admin/         # Admin panel views
+│       └── …              # Public views (home, blog, contact, posts…)
+├── lib/                   # Framework-level utilities (csrf, flash, auth, rate limiting…)
+├── migrations/            # Versioned schema migrations
+├── tests/                 # PHPUnit test suite
+│   ├── unit/              # In-process unit tests
+│   ├── api/v1/            # Request tests for the JSON:API
+│   └── pages/             # Request tests for HTML pages (including admin)
 ├── bin/
-│   ├── serve          # Start the dev server (localhost:8000)
-│   ├── console        # Interactive shell (PsySH)
-│   ├── test           # Run the test suite
-│   └── coverage       # Run tests and generate an HTML coverage report
+│   ├── serve              # Start the dev server (localhost:8000)
+│   ├── console            # Interactive shell (PsySH)
+│   ├── test               # Run the test suite
+│   └── coverage           # Run tests and generate an HTML coverage report
 └── docker/
-    └── init.sql       # Creates mydb_development and mydb_test databases
+    └── init.sql           # Creates mydb_development and mydb_test databases
 ```
