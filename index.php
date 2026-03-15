@@ -131,7 +131,7 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
     admin_require_auth();
 
     // Deletes: POST /admin/{resource}/{id}/delete → delete record, redirect to list
-    if (preg_match('#^/admin/(posts|contacts|subscribers|api_keys)/([0-9a-f-]{36})/delete$#', $path, $m)
+    if (preg_match('#^/admin/(posts|contacts|subscribers|api_keys|users)/([0-9a-f-]{36})/delete$#', $path, $m)
         && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_verify();
         $class  = match($m[1]) {
@@ -139,6 +139,7 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
             'contacts'    => 'Contact',
             'subscribers' => 'Subscriber',
             'api_keys'    => 'ApiKey',
+            'users'       => 'User',
         };
         $record = $class::find($m[2]);
         if ($record) {
@@ -148,6 +149,7 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
                 'contacts'    => 'Contact',
                 'subscribers' => 'Subscriber',
                 'api_keys'    => 'API key',
+                'users'       => 'User',
             };
             flash($label . ' deleted.');
         }
@@ -180,6 +182,13 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
         require 'pages/admin/subscribers/edit.php';
     } elseif ($path === '/admin/api_keys') {
         require 'pages/admin/api_keys/index.php';
+    } elseif ($path === '/admin/users') {
+        require 'pages/admin/users/index.php';
+    } elseif ($path === '/admin/users/new') {
+        require 'pages/admin/users/edit.php';
+    } elseif (preg_match('#^/admin/users/([0-9a-f-]{36})/edit$#', $path, $matches)) {
+        $id = $matches[1];
+        require 'pages/admin/users/edit.php';
     } else {
         http_response_code(404);
         $title = '404';

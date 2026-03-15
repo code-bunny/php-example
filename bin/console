@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+$root = dirname(__DIR__);
+require $root . '/vendor/autoload.php';
+
+// Bootstrap the app environment
+require_once $root . '/helpers/env.php';
+load_env($root . '/.env');
+
+require_once $root . '/helpers/logger.php';
+require_once $root . '/db.php';
+require_once $root . '/models/Post.php';
+require_once $root . '/models/Contact.php';
+require_once $root . '/models/Subscriber.php';
+require_once $root . '/models/ApiKey.php';
+require_once $root . '/models/User.php';
+Model::setDb($pdo);
+
+echo 'App: ' . ($_ENV['APP_ENV'] ?? 'development') . ' — models available: Post, Contact, Subscriber, ApiKey, User' . PHP_EOL;
+
+(new \Psy\Shell())->run();

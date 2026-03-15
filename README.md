@@ -1,16 +1,16 @@
-# php-example
+# php-app
+
+A PHP web application with a JSON:API, an admin panel, and a public site. Built to demonstrate how a well-structured PHP app works without a framework.
 
 ## Prerequisites
 
-Skip any steps you have already completed: You may already have Homebrew, PHP, and Docker installed.
+Skip any steps you have already completed.
 
 **1. Install Docker Desktop**
 
 Download and install from https://www.docker.com/products/docker-desktop
 
-**2. Install Homebrew**
-
-Homebrew is a package manager for macOS. Open Terminal and run:
+**2. Install Homebrew** (macOS)
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -22,26 +22,30 @@ Homebrew is a package manager for macOS. Open Terminal and run:
 brew install php
 ```
 
-Verify it worked:
+**4. Install Xdebug** (required for coverage reports)
 
 ```bash
-php -v
+pecl install xdebug
 ```
 
 ## Setup
-
-Copy the environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-The defaults work with the Docker setup below. Edit `.env` to change credentials before deploying.
+The defaults work with the Docker setup below. Edit `.env` before deploying.
 
 Start the database (MySQL) and phpMyAdmin:
 
 ```bash
 docker compose up -d
+```
+
+Install PHP dependencies:
+
+```bash
+composer install
 ```
 
 Run migrations:
@@ -50,7 +54,7 @@ Run migrations:
 php migrate.php
 ```
 
-Seed the database with sample posts:
+Seed the database with sample data and the first admin user:
 
 ```bash
 php seeds.php
@@ -62,77 +66,110 @@ Start the dev server:
 php -S localhost:8000 router.php
 ```
 
-The app is at http://localhost:8000. phpMyAdmin is at http://localhost:8080. Swagger UI is at http://localhost:8081.
+| URL | Description |
+|-----|-------------|
+| http://localhost:8000 | Public site |
+| http://localhost:8000/admin | Admin panel |
+| http://localhost:8080 | phpMyAdmin |
+| http://localhost:8081 | Swagger UI |
 
-The admin panel is at http://localhost:8000/admin — username: `admin`, password: `secret`.
+## Admin panel
 
-## Testing
+Sign in at http://localhost:8000/admin/login with the credentials created by `seeds.php` (default: `admin@example.com` / `password`). Change the password after first sign in.
 
-Install dependencies (first time only):
+The admin panel lets you manage posts, contacts, subscribers, API keys, and users.
 
-```bash
-composer install
-```
+## Console
 
-The tests make real HTTP requests to the running app, so **start the dev server first**:
-
-```bash
-php -S localhost:8000 router.php
-```
-
-Then, in a second terminal tab, run the full test suite:
+Open an interactive shell with all models pre-loaded (like `rails console`):
 
 ```bash
-bin/test
+bin/console
 ```
 
-Run just one suite:
+Use `APP_ENV=test bin/console` to open against the test database.
 
-```bash
-bin/test --testsuite API
-bin/test --testsuite Pages
+```
+> User::all()
+> Post::count()
+> $u = new User(['email' => 'someone@example.com', 'role' => 'admin'])
+> $u->setPassword('secret123')
+> $u->save()
 ```
 
-Run a single test file:
+## API keys
 
-```bash
-bin/test tests/api/v1/PostsTest.php
-```
-
-Run a single test by name:
-
-```bash
-bin/test --filter test_create_post
-```
-
-Tests clean up after themselves — any records created during a test are deleted when it finishes.
-
-To generate an HTML coverage report (opens automatically in the browser):
-
-```bash
-bin/coverage
-```
-
-Or just see the numbers in the terminal without opening a browser:
-
-```bash
-bin/test --testsuite Unit --coverage-text
-```
-
-`bin/coverage` handles everything automatically: it starts a temporary coverage-enabled server, runs all tests, then merges the coverage data collected from both the test process (unit tests) and the server process (request tests) into a single report.
-
-## API Keys
-
-All API endpoints require a Bearer token. To generate one:
-
-1. Go to http://localhost:8000/admin/api_keys
-2. Enter a name (e.g. `My app`) and click **Generate Key**
-3. Copy the token — it is only shown once
-
-Pass the token in the `Authorization` header with every API request:
+All API endpoints require a Bearer token. Create one in the admin panel at `/admin/api_keys`, then pass it with every request:
 
 ```
 Authorization: Bearer <your-api-key>
 ```
 
-In Swagger UI, click **Authorize 🔒**, paste the token, and click **Authorize**. All "Try it out" calls will include the header automatically.
+In Swagger UI, click **Authorize 🔒**, paste the token, and click **Authorize**.
+
+## Testing
+
+Run the full test suite:
+
+```bash
+bin/test
+```
+
+The test server starts automatically on port 8001 — the dev server on 8000 keeps running.
+
+Run a specific suite, file, or test:
+
+```bash
+bin/test --testsuite API
+bin/test tests/api/v1/PostsTest.php
+bin/test --filter test_create_post
+```
+
+Generate an HTML coverage report (opens in the browser):
+
+```bash
+bin/coverage
+```
+
+Tests use a separate `mydb_test` database and clean up after themselves.
+
+## Databases
+
+The app follows the Rails convention — `DB_NAME` in `.env` is the base name and the environment is appended automatically:
+
+| Environment | Database |
+|-------------|----------|
+| development | mydb_development |
+| test | mydb_test |
+
+Run migrations against both:
+
+```bash
+php migrate.php
+APP_ENV=test php migrate.php
+```
+
+## Project structure
+
+```
+├── index.php          # Front controller — all requests go through here
+├── router.php         # PHP built-in server router
+├── migrate.php        # Runs pending migrations
+├── seeds.php          # Seeds sample data and the first admin user
+├── models/            # Model classes (Post, Contact, Subscriber, ApiKey, User)
+├── pages/             # Page templates
+│   ├── admin/         # Admin panel pages
+│   └── api/           # JSON:API resource handlers
+├── helpers/           # csrf, flash, rate limiting, auth, env, logging
+├── migrations/        # Versioned schema migrations
+├── tests/             # PHPUnit test suite
+│   ├── unit/          # In-process unit tests
+│   ├── api/v1/        # Request tests for the JSON:API
+│   └── pages/         # Request tests for HTML pages (including admin)
+├── bin/
+│   ├── console        # Interactive shell (PsySH)
+│   ├── test           # Run the test suite
+│   └── coverage       # Run tests and generate an HTML coverage report
+└── docker/
+    └── init.sql       # Creates mydb_development and mydb_test databases
+```
