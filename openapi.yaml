@@ -321,10 +321,10 @@ components:
           type: string
         body:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
-        updated_at:
+        updatedAt:
           type: string
           format: date-time
 
@@ -421,7 +421,7 @@ components:
           format: email
         message:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -518,7 +518,7 @@ components:
         email:
           type: string
           format: email
-        created_at:
+        createdAt:
           type: string
           format: date-time
 

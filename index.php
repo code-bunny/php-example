@@ -71,42 +71,14 @@ if (str_starts_with($path, '/api/')) {
 
     require_once APP_ROOT . '/lib/api_auth.php';
     api_authenticate();
-    require_once APP_ROOT . '/app/api/ApiResource.php';
-    require_once APP_ROOT . '/app/api/v1/PostsResource.php';
-    require_once APP_ROOT . '/app/api/v1/ContactsResource.php';
-    require_once APP_ROOT . '/app/api/v1/SubscribersResource.php';
-}
+    require_once APP_ROOT . '/app/api/Api.php';
 
-// API routes — respond directly, no layout
-if ($path === '/api/v1/posts') {
-    (new PostsResource())->collection(); exit;
-}
+    Api::prefix('/api/v1');
+    Api::mount(Posts::class);
+    Api::mount(Contacts::class);
+    Api::mount(Subscribers::class);
 
-if ($path === '/api/v1/contacts') {
-    (new ContactsResource())->collection(); exit;
-}
-
-if ($path === '/api/v1/subscribers') {
-    (new SubscribersResource())->collection(); exit;
-}
-
-if (preg_match('#^/api/v1/posts/([0-9a-f-]{36})$#', $path, $matches)) {
-    (new PostsResource())->member($matches[1]); exit;
-}
-
-if (preg_match('#^/api/v1/contacts/([0-9a-f-]{36})$#', $path, $matches)) {
-    (new ContactsResource())->member($matches[1]); exit;
-}
-
-if (preg_match('#^/api/v1/subscribers/([0-9a-f-]{36})$#', $path, $matches)) {
-    (new SubscribersResource())->member($matches[1]); exit;
-}
-
-// Catch-all for unmatched /api routes
-if ($path === '/api' || str_starts_with($path, '/api/')) {
-    header('Content-Type: application/vnd.api+json');
-    http_response_code(404);
-    echo json_encode(['jsonapi' => ['version' => '1.1'], 'errors' => [['status' => '404', 'title' => 'Not found.']]], JSON_UNESCAPED_SLASHES);
+    Api::dispatch($_SERVER['REQUEST_METHOD'], $path) || Api::notFound();
     exit;
 }
 
