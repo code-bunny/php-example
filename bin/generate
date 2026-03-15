@@ -100,6 +100,8 @@ PHP);
 <h1><?= htmlspecialchars(\$this->title ?? '') ?></h1>
 HTML);
     }
+
+    appendRoutes($class, $view, $actions);
 }
 
 function generateApi(string $name, array $fields): void
@@ -214,6 +216,80 @@ class {$serializer} extends Serializer
     protected static array \$attributes = [{$attrList}];
 }
 PHP);
+}
+
+function appendRoutes(string $class, string $route, array $actions): void
+{
+    $indexPath = APP_ROOT . '/index.php';
+    $contents  = file_get_contents($indexPath);
+    $original  = $contents;
+    $file      = "app/controllers/{$class}.php";
+
+    $switchCases = '';
+    $regexCases  = '';
+
+    foreach ($actions as $action) {
+        $req = "require_once APP_ROOT . '/{$file}';";
+
+        switch ($action) {
+            case 'index':
+                if (!str_contains($contents, "case '/{$route}':")) {
+                    $switchCases .= "\n    case '/{$route}':\n"
+                        . "        {$req}\n"
+                        . "        \$ctrl    = new {$class}();\n"
+                        . "        \$content = \$ctrl->index();\n"
+                        . "        break;\n";
+                }
+                break;
+
+            case 'create':
+                if (!str_contains($contents, "case '/{$route}/new':")) {
+                    $switchCases .= "\n    case '/{$route}/new':\n"
+                        . "        {$req}\n"
+                        . "        \$ctrl    = new {$class}();\n"
+                        . "        \$content = \$ctrl->create();\n"
+                        . "        break;\n";
+                }
+                break;
+
+            case 'show':
+                $pat = '#^/' . $route . '/([0-9a-f-]{36})$#';
+                if (!str_contains($contents, "/{$route}/([0-9a-f-]{36})$")) {
+                    $regexCases .= "        } elseif (preg_match('{$pat}', \$path, \$matches)) {\n"
+                        . "            {$req}\n"
+                        . "            \$ctrl    = new {$class}();\n"
+                        . "            \$content = \$ctrl->show(\$matches[1]);\n";
+                }
+                break;
+
+            case 'edit':
+                $pat = '#^/' . $route . '/([0-9a-f-]{36})/edit$#';
+                if (!str_contains($contents, "/{$route}/([0-9a-f-]{36})/edit")) {
+                    $regexCases .= "        } elseif (preg_match('{$pat}', \$path, \$matches)) {\n"
+                        . "            {$req}\n"
+                        . "            \$ctrl    = new {$class}();\n"
+                        . "            \$content = \$ctrl->edit(\$matches[1]);\n";
+                }
+                break;
+
+            default:
+                echo "  notice   no route pattern for '{$action}' — add manually\n";
+        }
+    }
+
+    if ($switchCases) {
+        $contents = str_replace("    default:\n", $switchCases . "\n    default:\n", $contents);
+    }
+
+    if ($regexCases) {
+        $anchor   = "        } else {\n            http_response_code(404);";
+        $contents = str_replace($anchor, $regexCases . $anchor, $contents);
+    }
+
+    if ($contents !== $original) {
+        file_put_contents($indexPath, $contents);
+        echo "  updated  index.php\n";
+    }
 }
 
 function generateMigration(string $name, array $fields): void
