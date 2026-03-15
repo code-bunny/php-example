@@ -1,12 +1,12 @@
 services:
   db:
-    image: mysql:8.0
+    image: mariadb:latest
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: user
-      MYSQL_PASSWORD: pass
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_USER: user
+      MARIADB_PASSWORD: pass
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -24,8 +24,8 @@ services:
       - "8080:80"
     environment:
       PMA_HOST: db
-      PMA_USER: user
-      PMA_PASSWORD: pass
+      PMA_USER: root
+      PMA_PASSWORD: root
     depends_on:
       - db
 
