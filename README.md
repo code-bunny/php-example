@@ -4,7 +4,7 @@ A PHP web application with a JSON:API, an admin panel, and a public site. Built 
 
 This is intended for a student who is learning PHP to build up their own system, with common gotchas covered.
 
-If you want to build something simpler to start from, go back to the first commit in the repository where the first building blocks are demonstrated.
+If you want to build something simpler to start from, check out the [`basic-example`](../../tree/basic-example) branch, which contains just the first commit — a minimal working app with the core building blocks in place.
 
 If you want to go further, use one of the off-the-shelf frameworks. Ideally Ruby on Rails, but if PHP is your cuppa tea, Laravel is the way to go.
 
