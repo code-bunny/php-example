@@ -99,7 +99,7 @@ class PostsTest extends \TestCase
 
     public function test_requires_api_key(): void
     {
-        $url = ($_ENV['APP_URL'] ?? 'http://localhost:8000') . '/api/v1/posts';
+        $url = (getenv('APP_URL') ?: 'http://localhost:8001') . '/api/v1/posts';
         $ch  = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,

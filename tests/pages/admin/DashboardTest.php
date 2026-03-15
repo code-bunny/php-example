@@ -9,7 +9,7 @@ class DashboardTest extends \AdminTestCase
 
     public function test_dashboard_requires_auth(): void
     {
-        $url = ($_ENV['APP_URL'] ?? 'http://localhost:8000') . '/admin';
+        $url = (getenv('APP_URL') ?: 'http://localhost:8001') . '/admin';
         $ch  = curl_init($url);
         curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true]);
         curl_exec($ch);

@@ -2,24 +2,10 @@
 set -e
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SERVER_PID=""
-
-cleanup() {
-    [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null || true
-}
-trap cleanup EXIT INT TERM
 
 if [ ! -f "$ROOT/vendor/bin/phpunit" ]; then
     echo "PHPUnit not found. Run: composer install" >&2
     exit 1
 fi
-
-# Test server runs on 8001 so the dev server on 8000 can stay running
-lsof -ti:8001 | xargs kill 2>/dev/null || true
-sleep 0.3
-
-APP_ENV=test php -S localhost:8001 "$ROOT/router.php" >/dev/null 2>&1 &
-SERVER_PID=$!
-sleep 0.8
 
 APP_URL=http://localhost:8001 "$ROOT/vendor/bin/phpunit" "$@"

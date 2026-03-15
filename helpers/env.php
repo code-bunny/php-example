@@ -21,10 +21,15 @@ function load_env(string $file): void {
             $value = $m[2];
         }
 
-        // Shell environment takes precedence — don't overwrite vars that are
-        // already set (e.g. APP_ENV=test passed when starting the test server).
-        // Check both $_ENV and getenv() since some PHP configs don't auto-populate $_ENV.
-        if (array_key_exists($key, $_ENV) || getenv($key) !== false) continue;
+        // Shell environment takes precedence — don't overwrite vars already set
+        // (e.g. APP_ENV=test passed when starting the test server).
+        // Some PHP configs don't auto-populate $_ENV from the process environment,
+        // so sync the value in so callers can use either $_ENV or getenv() consistently.
+        if (getenv($key) !== false) {
+            $_ENV[$key] ??= getenv($key);
+            continue;
+        }
+        if (array_key_exists($key, $_ENV)) continue;
 
         $_ENV[$key] = $value;
         putenv("$key=$value");
