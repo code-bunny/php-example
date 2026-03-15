@@ -103,11 +103,9 @@ function start_request_log(): void {
 
         if (DEV_LOGGING) {
             $ip   = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-            $date = date('Y-m-d H:i:s');
 
             $lines   = [];
-            $lines[] = '';
-            $lines[] = "\033[1mStarted $method \"$path\" for $ip at $date\033[0m";
+            $lines[] = "\033[1mStarted $method \"$path\" for $ip\033[0m";
 
             foreach (DevLog::$entries as $e) {
                 if ($e['type'] === 'query') {
@@ -129,13 +127,13 @@ function start_request_log(): void {
             $summary .= "\033[0m";
             $lines[] = $summary;
 
-            error_log(implode("\n", $lines));
+            file_put_contents('php://stderr', implode("\n", $lines) . "\n\n\n");
         } else {
             // Lograge-style single line for production
             $db_part = $queries > 0
                 ? '  |  db: ' . $queries . ' ' . ($queries === 1 ? 'query' : 'queries') . ' (' . $db_ms . 'ms)'
                 : '';
-            error_log(sprintf('%-6s %-40s %d  %sms%s',
+            file_put_contents('php://stderr', sprintf('%-6s %-40s %d  %sms%s' . "\n",
                 $method,
                 $path,
                 $status,

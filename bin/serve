@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec php -S localhost:8000 "$(dirname "$0")/router.php"
+php -S localhost:8000 "$(dirname "$0")/router.php" 2>&1 | grep -v "Accepted\|Closing"
