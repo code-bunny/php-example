@@ -17,9 +17,8 @@ $subscribers = Subscriber::paginate($size, $offset);
 
 <?php admin_nav('subscribers') ?>
 
-<div class="flex justify-between items-center mb-6">
+<div class="mb-6">
     <h1 class="text-2xl font-bold">Subscribers</h1>
-    <a href="/admin/subscribers/new" class="bg-indigo-500 text-white text-sm py-2 px-4 rounded hover:bg-indigo-600">New Subscriber</a>
 </div>
 
 <div class="overflow-x-auto">
@@ -39,12 +38,11 @@ $subscribers = Subscriber::paginate($size, $offset);
                 <tr class="bg-white">
                     <td class="px-4 py-3 font-medium text-gray-900"><?= htmlspecialchars($subscriber->email) ?></td>
                     <td class="px-4 py-3 text-gray-500"><?= htmlspecialchars($subscriber->created_at) ?></td>
-                    <td class="px-4 py-3 text-right space-x-3">
-                        <a href="/admin/subscribers/<?= $subscriber->id ?>/edit" class="text-indigo-600 hover:underline">Edit</a>
+                    <td class="px-4 py-3 text-right">
                         <form method="POST" action="/admin/subscribers/<?= $subscriber->id ?>/delete" class="inline"
-                              onsubmit="return confirm('Delete this subscriber?')">
+                              onsubmit="return confirm('Unsubscribe this address?')">
                             <?php csrf_field() ?>
-                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">Unsubscribe</button>
                         </form>
                     </td>
                 </tr>

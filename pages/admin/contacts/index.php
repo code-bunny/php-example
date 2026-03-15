@@ -41,9 +41,9 @@ $contacts = Contact::paginate($size, $offset);
                     <td class="px-4 py-3 text-gray-600 max-w-xs truncate"><?= htmlspecialchars($contact->message) ?></td>
                     <td class="px-4 py-3 text-gray-500"><?= htmlspecialchars($contact->created_at) ?></td>
                     <td class="px-4 py-3 text-right space-x-3">
-                        <a href="/admin/contacts/<?= $contact->id ?>/edit" class="text-indigo-600 hover:underline">Edit</a>
+                        <a href="/admin/contacts/<?= $contact->id ?>" class="text-indigo-600 hover:underline">View</a>
                         <form method="POST" action="/admin/contacts/<?= $contact->id ?>/delete" class="inline"
-                              onsubmit="return confirm('Delete this contact?')">
+                              onsubmit="return confirm('Delete this message?')">
                             <?php csrf_field() ?>
                             <button type="submit" class="text-red-600 hover:underline">Delete</button>
                         </form>

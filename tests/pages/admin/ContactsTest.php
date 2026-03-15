@@ -17,46 +17,28 @@ class ContactsTest extends \AdminTestCase
         $this->get('/admin/contacts')->assertOk();
     }
 
-    public function test_edit_form_returns_ok(): void
+    public function test_show_contact_returns_ok(): void
     {
         $id = $this->apiCreateContact();
         $this->created[] = $id;
 
-        $this->get("/admin/contacts/$id/edit")->assertOk();
+        $this->get("/admin/contacts/$id")->assertOk();
     }
 
-    public function test_update_contact_redirects(): void
+    public function test_show_displays_email_and_message(): void
     {
-        $id = $this->apiCreateContact();
+        $id = $this->apiCreateContact('show@example.com', 'Hello there');
         $this->created[] = $id;
 
-        $csrf = $this->fetchCsrfToken("/admin/contacts/$id/edit");
-
-        $this->post("/admin/contacts/$id/edit", [
-            'csrf_token' => $csrf,
-            'email'      => 'updated@example.com',
-            'message'    => 'Updated message',
-        ])->assertRedirect();
-    }
-
-    public function test_update_with_invalid_email_returns_422(): void
-    {
-        $id = $this->apiCreateContact();
-        $this->created[] = $id;
-
-        $csrf = $this->fetchCsrfToken("/admin/contacts/$id/edit");
-
-        $this->post("/admin/contacts/$id/edit", [
-            'csrf_token' => $csrf,
-            'email'      => 'not-an-email',
-            'message'    => 'Some message',
-        ])->assertStatus(422);
+        $this->get("/admin/contacts/$id")
+            ->assertOk()
+            ->assertSee('show@example.com')
+            ->assertSee('Hello there');
     }
 
     public function test_delete_contact_redirects(): void
     {
-        $id = $this->apiCreateContact();
-
+        $id   = $this->apiCreateContact();
         $csrf = $this->fetchCsrfToken('/admin/contacts');
 
         $this->post("/admin/contacts/$id/delete", [

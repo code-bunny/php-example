@@ -170,16 +170,11 @@ if ($path === '/admin' || str_starts_with($path, '/admin/')) {
         require 'pages/admin/posts/edit.php';
     } elseif ($path === '/admin/contacts') {
         require 'pages/admin/contacts/index.php';
-    } elseif (preg_match('#^/admin/contacts/([0-9a-f-]{36})/edit$#', $path, $matches)) {
+    } elseif (preg_match('#^/admin/contacts/([0-9a-f-]{36})$#', $path, $matches)) {
         $id = $matches[1];
-        require 'pages/admin/contacts/edit.php';
+        require 'pages/admin/contacts/show.php';
     } elseif ($path === '/admin/subscribers') {
         require 'pages/admin/subscribers/index.php';
-    } elseif ($path === '/admin/subscribers/new') {
-        require 'pages/admin/subscribers/edit.php';
-    } elseif (preg_match('#^/admin/subscribers/([0-9a-f-]{36})/edit$#', $path, $matches)) {
-        $id = $matches[1];
-        require 'pages/admin/subscribers/edit.php';
     } elseif ($path === '/admin/api_keys') {
         require 'pages/admin/api_keys/index.php';
     } elseif ($path === '/admin/users') {
