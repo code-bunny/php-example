@@ -440,6 +440,25 @@ function writeFile(string $path, string $content): void
     }
     file_put_contents($path, $content . "\n");
     echo "  created  {$path}\n";
+
+    if (str_ends_with($path, '.php')) {
+        lintFile($path);
+    }
+}
+
+function lintFile(string $path): void
+{
+    $output = [];
+    $code   = 0;
+    exec('php -l ' . escapeshellarg($path) . ' 2>&1', $output, $code);
+
+    if ($code !== 0) {
+        // Strip the redundant filename line php -l emits, keep just the error
+        $errors = array_filter($output, fn($l) => str_starts_with($l, 'Parse error') || str_starts_with($l, 'Fatal error'));
+        foreach ($errors as $error) {
+            echo "  error    {$error}\n";
+        }
+    }
 }
 
 function usage(): never
