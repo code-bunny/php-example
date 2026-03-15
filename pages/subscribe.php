@@ -12,15 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 csrf_verify();
 rate_limit('subscribe', max: 3, window: 30 * 60); // 3 attempts per 30 minutes
 
-$email      = trim($_POST['email'] ?? '');
-$subscribed = false;
+$email  = trim($_POST['email'] ?? '');
+$result = '';   // 'subscribed' | 'already_subscribed'
 
 if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $existing = Subscriber::where('email', $email);
     if (empty($existing)) {
         (new Subscriber(['email' => $email]))->save();
+        $result = 'subscribed';
+    } else {
+        $result = 'already_subscribed';
     }
-    $subscribed = true; // already subscribed counts as success too
 }
 
 // Only redirect back to the same origin — never follow an external URL
@@ -30,5 +32,5 @@ $safe    = (isset($parsed['host']) && $parsed['host'] === $_SERVER['HTTP_HOST'])
     ? ($parsed['path'] ?? '/')
     : '/';
 
-header('Location: ' . $safe . ($subscribed ? '?subscribed=1' : ''));
+header('Location: ' . $safe . ($result ? '?' . $result . '=1' : ''));
 exit;

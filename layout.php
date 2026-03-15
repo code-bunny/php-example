@@ -18,6 +18,10 @@
     <div class="bg-indigo-500 text-white text-sm text-center py-2 px-4">
         You're subscribed — thanks!
     </div>
+    <?php elseif (isset($_GET['already_subscribed'])): ?>
+    <div class="bg-amber-400 text-amber-900 text-sm text-center py-2 px-4">
+        You're already subscribed with that address.
+    </div>
     <?php endif; ?>
 
     <main class="container mx-auto px-5 py-8 flex-grow">
