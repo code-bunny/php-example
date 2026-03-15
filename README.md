@@ -6,8 +6,6 @@ This is intended for a student who is learning PHP to build up their own system,
 
 If you want to build something simpler to start from, go back to the first commit in the repository where the first building blocks are demonstrated.
 
-For a real applications you'd want to go MVC and with one of the off the shelf frameworks.
-
 For a real application, you'd want to go MVC and use one of the off-the-shelf frameworks. Ideally, you'd want to not use PHP and go for Ruby on Rails, but if PHP is your cuppa tea, I don't stop you.
 
 ## Prerequisites
