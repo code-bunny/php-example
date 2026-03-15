@@ -11,6 +11,7 @@ load_env(__DIR__ . '/../.env');
 require_once __DIR__ . '/../helpers/logger.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../models/ApiKey.php';
+require_once __DIR__ . '/../models/User.php';
 Model::setDb($pdo);
 
 // Load test base classes
@@ -46,11 +47,18 @@ if ($sock) {
 
 // ── Temporary API key for the test suite ─────────────────────────────────────
 define('TEST_API_KEY', 'test_' . bin2hex(random_bytes(16)));
-
 (new ApiKey(['name' => 'Test Suite', 'token' => TEST_API_KEY]))->save();
+
+// ── Temporary admin user for the test suite ───────────────────────────────────
+define('TEST_ADMIN_EMAIL',    'testadmin_' . bin2hex(random_bytes(4)) . '@example.com');
+define('TEST_ADMIN_PASSWORD', bin2hex(random_bytes(8)));
+$testAdmin = new User(['email' => TEST_ADMIN_EMAIL, 'role' => 'admin']);
+$testAdmin->setPassword(TEST_ADMIN_PASSWORD);
+$testAdmin->save();
 
 register_shutdown_function(function () use ($pdo) {
     $pdo->prepare("DELETE FROM api_keys WHERE token = ?")->execute([TEST_API_KEY]);
+    $pdo->prepare("DELETE FROM users   WHERE email = ?")->execute([TEST_ADMIN_EMAIL]);
 });
 
 // ── In-process coverage (unit tests) when running under bin/coverage ──────────

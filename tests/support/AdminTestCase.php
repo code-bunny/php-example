@@ -1,18 +1,30 @@
 <?php
 
-// Base class for admin page tests — adds HTTP Basic Auth to every request.
-// Uses the same ADMIN_USER / ADMIN_PASS credentials as the app reads from .env.
+// Base class for admin page tests — logs in via POST /admin/login before each test.
 abstract class AdminTestCase extends PageTestCase
 {
-    protected function extraCurlOptions(): array
+    protected function setUp(): void
     {
-        $user = $_ENV['ADMIN_USER'] ?? 'admin';
-        $pass = $_ENV['ADMIN_PASS'] ?? 'password';
-        return [CURLOPT_USERPWD => "$user:$pass"];
+        parent::setUp();
+        $this->loginAsAdmin();
+    }
+
+    private function loginAsAdmin(): void
+    {
+        // Fetch the login page first to get a CSRF token (and set the session cookie)
+        $body = $this->get('/admin/login')->body;
+        preg_match('/name="csrf_token"\s+value="([^"]+)"/', $body, $matches);
+        $csrf = $matches[1] ?? '';
+
+        $this->post('/admin/login', [
+            'email'      => TEST_ADMIN_EMAIL,
+            'password'   => TEST_ADMIN_PASSWORD,
+            'csrf_token' => $csrf,
+        ]);
+        // The cookie jar now holds the authenticated session for all subsequent requests
     }
 
     // Fetch a CSRF token by loading any admin page that has a form.
-    // The cookie jar keeps the same session, so the token stays valid for the POST.
     protected function fetchCsrfToken(string $path = '/admin'): string
     {
         $body = $this->get($path)->body;
@@ -20,7 +32,6 @@ abstract class AdminTestCase extends PageTestCase
         return $matches[1] ?? '';
     }
 
-    // Create a post via the API and return its id — used for test setup/teardown.
     protected function apiCreatePost(string $title = 'Test Post', string $body = 'Test body'): string
     {
         return $this->apiPost('/api/v1/posts', [
@@ -44,7 +55,7 @@ abstract class AdminTestCase extends PageTestCase
 
     protected function apiDelete(string $path): void
     {
-        $url = (getenv('APP_URL') ?: 'http://localhost:8000') . $path;
+        $url = (getenv('APP_URL') ?: 'http://localhost:8001') . $path;
         $ch  = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_CUSTOMREQUEST  => 'DELETE',
@@ -54,11 +65,9 @@ abstract class AdminTestCase extends PageTestCase
         curl_exec($ch);
     }
 
-    // ── Internals ────────────────────────────────────────────────────
-
     private function apiPost(string $path, array $body): string
     {
-        $url = (getenv('APP_URL') ?: 'http://localhost:8000') . $path;
+        $url = (getenv('APP_URL') ?: 'http://localhost:8001') . $path;
         $ch  = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,

@@ -109,10 +109,26 @@ if ($path === '/api' || str_starts_with($path, '/api/')) {
 
 // Admin routes
 if ($path === '/admin' || str_starts_with($path, '/admin/')) {
-    require_once 'helpers/admin_auth.php';
-    admin_auth();
     require_once 'db.php';
     Model::setDb($pdo);
+    require_once 'models/User.php';
+    require_once 'helpers/admin_auth.php';
+
+    // Login — no auth required
+    if ($path === '/admin/login') {
+        require 'pages/admin/login.php';
+        exit;
+    }
+
+    // Logout
+    if ($path === '/admin/logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_verify();
+        session_destroy();
+        header('Location: /admin/login');
+        exit;
+    }
+
+    admin_require_auth();
 
     // Deletes: POST /admin/{resource}/{id}/delete → delete record, redirect to list
     if (preg_match('#^/admin/(posts|contacts|subscribers|api_keys)/([0-9a-f-]{36})/delete$#', $path, $m)

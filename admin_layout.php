@@ -15,7 +15,17 @@
     <header class="bg-white border-b border-gray-200">
         <div class="container mx-auto px-5 py-4 flex items-center justify-between">
             <a href="/admin" class="text-sm font-semibold text-gray-900 tracking-widest uppercase"><?= htmlspecialchars($app['name']) ?> — Admin</a>
-            <a href="/" class="text-sm text-gray-500 hover:text-gray-900">← Back to site</a>
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-sm text-gray-500 hover:text-gray-900">← Back to site</a>
+                <?php $currentUser = function_exists('admin_current_user') ? admin_current_user() : null; ?>
+                <?php if ($currentUser): ?>
+                    <span class="text-sm text-gray-500"><?= htmlspecialchars($currentUser->email) ?></span>
+                    <form method="POST" action="/admin/logout">
+                        <?php csrf_field() ?>
+                        <button type="submit" class="text-sm text-gray-500 hover:text-gray-900">Sign out</button>
+                    </form>
+                <?php endif ?>
+            </div>
         </div>
     </header>
 

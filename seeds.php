@@ -2,7 +2,20 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/models/Post.php';
+require_once __DIR__ . '/models/User.php';
 Model::setDb($pdo);
+
+// ── Admin user ────────────────────────────────────────────────────────────────
+if (empty(User::all())) {
+    $email    = $_ENV['ADMIN_EMAIL']    ?? 'admin@example.com';
+    $password = $_ENV['ADMIN_PASSWORD'] ?? 'password';
+    $user = new User(['email' => $email, 'role' => 'admin']);
+    $user->setPassword($password);
+    $user->save();
+    echo "Admin user created: $email (change the password after first sign in)\n";
+}
+
+// ── Posts ─────────────────────────────────────────────────────────────────────
 
 $posts = [
     ['Getting Started with PHP', 'PHP is a widely-used open source scripting language suited for web development. It is fast to learn and runs on the server side.'],

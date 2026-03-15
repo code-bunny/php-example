@@ -1,12 +1,17 @@
 <?php
 
-function admin_auth(): void {
-    $user = $_SERVER['PHP_AUTH_USER'] ?? '';
-    $pass = $_SERVER['PHP_AUTH_PW']   ?? '';
+// Returns the currently logged-in admin User, or null if not authenticated.
+function admin_current_user(): ?User
+{
+    if (empty($_SESSION['user_id'])) return null;
+    return User::find($_SESSION['user_id']);
+}
 
-    if ($user !== $_ENV['ADMIN_USER'] || $pass !== $_ENV['ADMIN_PASS']) {
-        header('WWW-Authenticate: Basic realm="Admin"');
-        http_response_code(401);
-        exit('Unauthorized');
+// Redirect to the login page unless the session holds a valid admin user.
+function admin_require_auth(): void
+{
+    if (!admin_current_user()) {
+        header('Location: /admin/login');
+        exit;
     }
 }
