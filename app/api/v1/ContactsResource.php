@@ -1,7 +1,7 @@
 <?php
 
-require_once APP_ROOT . '/app/controllers/api/ApiResource.php';
-require_once __DIR__ . '/../../../models/Contact.php';
+require_once APP_ROOT . '/app/api/ApiResource.php';
+require_once APP_ROOT . '/app/models/Contact.php';
 
 class ContactsResource extends ApiResource {
 

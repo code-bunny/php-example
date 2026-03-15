@@ -1,7 +1,7 @@
 <?php
 
-require_once APP_ROOT . '/app/controllers/api/ApiResource.php';
-require_once __DIR__ . '/../../../models/Subscriber.php';
+require_once APP_ROOT . '/app/api/ApiResource.php';
+require_once APP_ROOT . '/app/models/Subscriber.php';
 
 class SubscribersResource extends ApiResource {
 

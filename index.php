@@ -71,10 +71,10 @@ if (str_starts_with($path, '/api/')) {
 
     require_once APP_ROOT . '/lib/api_auth.php';
     api_authenticate();
-    require_once APP_ROOT . '/app/controllers/api/ApiResource.php';
-    require_once APP_ROOT . '/app/controllers/api/v1/PostsResource.php';
-    require_once APP_ROOT . '/app/controllers/api/v1/ContactsResource.php';
-    require_once APP_ROOT . '/app/controllers/api/v1/SubscribersResource.php';
+    require_once APP_ROOT . '/app/api/ApiResource.php';
+    require_once APP_ROOT . '/app/api/v1/PostsResource.php';
+    require_once APP_ROOT . '/app/api/v1/ContactsResource.php';
+    require_once APP_ROOT . '/app/api/v1/SubscribersResource.php';
 }
 
 // API routes — respond directly, no layout
