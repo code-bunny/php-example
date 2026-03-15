@@ -1,5 +1,25 @@
 <?php
 
+// ── Dev log accumulator ───────────────────────────────────────────────────────
+// Collects SQL queries and view renders in chronological order so the shutdown
+// hook can print them in a Rails-style block (development only).
+
+class DevLog {
+    public static array $entries = [];
+    public static float $viewMs  = 0.0;
+
+    public static function query(string $sql, float $ms): void {
+        self::$entries[] = ['type' => 'query', 'sql' => $sql, 'ms' => round($ms, 1)];
+    }
+
+    public static function render(string $view, float $ms): void {
+        self::$entries[] = ['type' => 'render', 'view' => $view, 'ms' => round($ms, 1)];
+        self::$viewMs += $ms;
+    }
+}
+
+// ── PDO wrappers ──────────────────────────────────────────────────────────────
+
 // Extends PDOStatement to time and count every execute() call.
 // PDO instantiates this automatically via ATTR_STATEMENT_CLASS.
 class LoggingPDOStatement extends PDOStatement {
@@ -11,8 +31,12 @@ class LoggingPDOStatement extends PDOStatement {
     public function execute(?array $params = null): bool {
         $t      = microtime(true);
         $result = parent::execute($params);
-        self::$ms    += (microtime(true) - $t) * 1000;
+        $elapsed = (microtime(true) - $t) * 1000;
+        self::$ms    += $elapsed;
         self::$count++;
+        if (defined('DEV_LOGGING') && DEV_LOGGING) {
+            DevLog::query($this->queryString, $elapsed);
+        }
         return $result;
     }
 }
@@ -28,30 +52,46 @@ class LoggingPDO extends PDO {
     public function query(string $query, mixed ...$args): PDOStatement|false {
         $t      = microtime(true);
         $result = parent::query($query, ...$args);
-        LoggingPDOStatement::$ms    += (microtime(true) - $t) * 1000;
+        $elapsed = (microtime(true) - $t) * 1000;
+        LoggingPDOStatement::$ms    += $elapsed;
         LoggingPDOStatement::$count++;
+        if (defined('DEV_LOGGING') && DEV_LOGGING) {
+            DevLog::query($query, $elapsed);
+        }
         return $result;
     }
 
     public function exec(string $statement): int|false {
         $t      = microtime(true);
         $result = parent::exec($statement);
-        LoggingPDOStatement::$ms    += (microtime(true) - $t) * 1000;
+        $elapsed = (microtime(true) - $t) * 1000;
+        LoggingPDOStatement::$ms    += $elapsed;
         LoggingPDOStatement::$count++;
+        if (defined('DEV_LOGGING') && DEV_LOGGING) {
+            DevLog::query($statement, $elapsed);
+        }
         return $result;
     }
 }
 
-// Call once at the top of index.php. Registers a shutdown hook that writes
-// a single log line after the response is sent — similar to Rails/Lograge:
+// ── Request log ───────────────────────────────────────────────────────────────
+// Call once at the top of index.php.
+//
+// Development — Rails-style verbose block:
+//
+//   Started GET "/" for 127.0.0.1 at 2026-03-15 10:23:45
+//     Post Load (1.2ms)  SELECT * FROM posts ORDER BY created_at DESC LIMIT 10
+//     Rendered blog/index (2.3ms)
+//     Rendered shared/_header (0.4ms)
+//   Completed 200 OK in 42ms (Views: 38.5ms | DB: 1.5ms)
+//
+// Production — single Lograge-style summary line:
 //
 //   GET  /blog              200  42.3ms  |  db: 2 queries (5.1ms)
-//   POST /contact           302   8.7ms  |  db: 1 query  (2.3ms)
-//   GET  /api/v1/posts      200  11.2ms  |  db: 1 query  (1.8ms)
-//   GET  /assets/app.css    200   0.4ms
 
 function start_request_log(): void {
     define('REQUEST_START_TIME', microtime(true));
+    define('DEV_LOGGING', ($_ENV['APP_ENV'] ?? 'development') !== 'production');
 
     register_shutdown_function(function () {
         $method   = $_SERVER['REQUEST_METHOD'] ?? 'CLI';
@@ -61,16 +101,88 @@ function start_request_log(): void {
         $queries  = LoggingPDOStatement::$count;
         $db_ms    = round(LoggingPDOStatement::$ms, 1);
 
-        $db_part = $queries > 0
-            ? '  |  db: ' . $queries . ' ' . ($queries === 1 ? 'query' : 'queries') . ' (' . $db_ms . 'ms)'
-            : '';
+        if (DEV_LOGGING) {
+            $ip   = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $date = date('Y-m-d H:i:s');
 
-        error_log(sprintf('%-6s %-40s %d  %sms%s',
-            $method,
-            $path,
-            $status,
-            $duration,
-            $db_part
-        ));
+            $lines   = [];
+            $lines[] = '';
+            $lines[] = "\033[1mStarted $method \"$path\" for $ip at $date\033[0m";
+
+            foreach (DevLog::$entries as $e) {
+                if ($e['type'] === 'query') {
+                    $label = _dev_log_label($e['sql']);
+                    $sql   = preg_replace('/\s+/', ' ', trim($e['sql']));
+                    $lines[] = "  \033[36m$label ({$e['ms']}ms)\033[0m  $sql";
+                } else {
+                    $lines[] = "  \033[32mRendered {$e['view']} ({$e['ms']}ms)\033[0m";
+                }
+            }
+
+            $view_ms     = round(DevLog::$viewMs, 1);
+            $status_text = _dev_log_status_text($status);
+            $summary     = "\033[1mCompleted $status $status_text in {$duration}ms";
+            $parts       = [];
+            if ($view_ms > 0) $parts[] = "Views: {$view_ms}ms";
+            if ($queries > 0) $parts[] = "DB: {$db_ms}ms";
+            if ($parts) $summary .= ' (' . implode(' | ', $parts) . ')';
+            $summary .= "\033[0m";
+            $lines[] = $summary;
+
+            error_log(implode("\n", $lines));
+        } else {
+            // Lograge-style single line for production
+            $db_part = $queries > 0
+                ? '  |  db: ' . $queries . ' ' . ($queries === 1 ? 'query' : 'queries') . ' (' . $db_ms . 'ms)'
+                : '';
+            error_log(sprintf('%-6s %-40s %d  %sms%s',
+                $method,
+                $path,
+                $status,
+                $duration,
+                $db_part
+            ));
+        }
     });
+}
+
+// ── Helpers (prefixed to avoid polluting global namespace) ────────────────────
+
+function _dev_log_label(string $sql): string {
+    $trimmed = ltrim($sql);
+    if (stripos($trimmed, 'SELECT') === 0)      { $action = 'Load';    }
+    elseif (stripos($trimmed, 'INSERT') === 0)  { $action = 'Create';  }
+    elseif (stripos($trimmed, 'UPDATE') === 0)  { $action = 'Update';  }
+    elseif (stripos($trimmed, 'DELETE') === 0)  { $action = 'Destroy'; }
+    else                                         { return 'SQL';        }
+
+    if (preg_match('/\bFROM\s+`?(\w+)`?/i', $sql, $m) ||
+        preg_match('/\bINTO\s+`?(\w+)`?\s/i', $sql, $m) ||
+        preg_match('/^\s*UPDATE\s+`?(\w+)`?/i', $sql, $m)) {
+        return ucfirst(_dev_log_singularize($m[1])) . ' ' . $action;
+    }
+
+    return "SQL $action";
+}
+
+function _dev_log_singularize(string $word): string {
+    if (str_ends_with($word, 'ies'))  return substr($word, 0, -3) . 'y';
+    if (str_ends_with($word, 'sses') ||
+        str_ends_with($word, 'xes')  ||
+        str_ends_with($word, 'ches')) return substr($word, 0, -2);
+    if (str_ends_with($word, 's') && !str_ends_with($word, 'ss')) return substr($word, 0, -1);
+    return $word;
+}
+
+function _dev_log_status_text(int $code): string {
+    return match ($code) {
+        200 => 'OK',         201 => 'Created',           204 => 'No Content',
+        301 => 'Moved Permanently', 302 => 'Found',      303 => 'See Other',
+        304 => 'Not Modified',
+        400 => 'Bad Request', 401 => 'Unauthorized',     403 => 'Forbidden',
+        404 => 'Not Found',   405 => 'Method Not Allowed',
+        422 => 'Unprocessable Entity', 429 => 'Too Many Requests',
+        500 => 'Internal Server Error',
+        default => '',
+    };
 }
