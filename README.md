@@ -63,7 +63,7 @@ php seeds.php
 Start the dev server:
 
 ```bash
-php -S localhost:8000 router.php
+bin/serve
 ```
 
 | URL | Description |
@@ -167,6 +167,7 @@ APP_ENV=test php migrate.php
 │   ├── api/v1/        # Request tests for the JSON:API
 │   └── pages/         # Request tests for HTML pages (including admin)
 ├── bin/
+│   ├── serve          # Start the dev server (localhost:8000)
 │   ├── console        # Interactive shell (PsySH)
 │   ├── test           # Run the test suite
 │   └── coverage       # Run tests and generate an HTML coverage report

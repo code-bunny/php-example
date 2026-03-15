@@ -18,6 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email is required.';
 
+    if ($email && empty($errors)) {
+        $existing = Subscriber::where('email', $email);
+        if (!empty($existing) && $existing[0]->id !== ($subscriber?->id)) {
+            $errors[] = 'Email is already subscribed.';
+        }
+    }
+
     if (empty($errors)) {
         if ($subscriber) {
             $subscriber->email = $email;

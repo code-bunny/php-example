@@ -17,10 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $role     = trim($_POST['role']     ?? 'admin');
 
-    if ($email === '')                              $errors[] = 'Email is required.';
-    if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email is invalid.';
-    if (!$user && $password === '')                 $errors[] = 'Password is required.';
-    if ($password !== '' && strlen($password) < 8) $errors[] = 'Password must be at least 8 characters.';
+    if ($email === '')                                          $errors[] = 'Email is required.';
+    if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL))  $errors[] = 'Email is invalid.';
+    if (!$user && $password === '')                            $errors[] = 'Password is required.';
+    if ($password !== '' && strlen($password) < 8)            $errors[] = 'Password must be at least 8 characters.';
+
+    if ($email && empty($errors)) {
+        $existing = User::where('email', $email);
+        if (!empty($existing) && $existing[0]->id !== ($user?->id)) {
+            $errors[] = 'Email is already taken.';
+        }
+    }
 
     if (empty($errors)) {
         if ($user) {
