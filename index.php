@@ -71,14 +71,11 @@ if (str_starts_with($path, '/api/')) {
 
     require_once APP_ROOT . '/lib/api_auth.php';
     api_authenticate();
+    require_once APP_ROOT . '/app/api/Route.php';
+    Route::prefix('/api/v1');
     require_once APP_ROOT . '/app/api/Api.php';
 
-    Api::prefix('/api/v1');
-    Api::mount(Posts::class);
-    Api::mount(Contacts::class);
-    Api::mount(Subscribers::class);
-
-    Api::dispatch($_SERVER['REQUEST_METHOD'], $path) || Api::notFound();
+    Route::dispatch($_SERVER['REQUEST_METHOD'], $path) || notFound();
     exit;
 }
 
