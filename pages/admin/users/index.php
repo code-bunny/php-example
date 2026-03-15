@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../../models/User.php';
 require_once __DIR__ . '/../_nav.php';
+require_once __DIR__ . '/../../components/icons.php';
 
 $title = 'Admin — Users';
 $users = User::all();
@@ -12,7 +13,9 @@ $users = User::all();
 
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Users</h1>
-    <a href="/admin/users/new" class="bg-indigo-500 text-white text-sm py-2 px-4 rounded hover:bg-indigo-600">New User</a>
+    <a href="/admin/users/new" class="inline-flex items-center gap-1.5 bg-indigo-500 text-white text-sm py-2 px-4 rounded hover:bg-indigo-600">
+        <?= icon('user-plus', 'w-4 h-4') ?> New User
+    </a>
 </div>
 
 <div class="overflow-x-auto">
@@ -34,13 +37,15 @@ $users = User::all();
                     <td class="px-4 py-3 font-medium text-gray-900"><?= htmlspecialchars($user->email) ?></td>
                     <td class="px-4 py-3 text-gray-500"><?= htmlspecialchars($user->role) ?></td>
                     <td class="px-4 py-3 text-gray-500"><?= htmlspecialchars($user->created_at) ?></td>
-                    <td class="px-4 py-3 text-right space-x-3">
-                        <a href="/admin/users/<?= $user->id ?>/edit" class="text-indigo-600 hover:underline">Edit</a>
-                        <form method="POST" action="/admin/users/<?= $user->id ?>/delete" class="inline"
-                              onsubmit="return confirm('Delete this user?')">
-                            <?php csrf_field() ?>
-                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                        </form>
+                    <td class="px-4 py-3 text-right">
+                        <div class="inline-flex items-center gap-3">
+                            <a href="/admin/users/<?= $user->id ?>/edit" class="inline-flex text-indigo-600 hover:text-indigo-800" title="Edit"><?= icon('pencil-square') ?></a>
+                            <form method="POST" action="/admin/users/<?= $user->id ?>/delete" class="inline-flex"
+                                  onsubmit="return confirm('Delete this user?')">
+                                <?php csrf_field() ?>
+                                <button type="submit" class="inline-flex p-0 text-red-500 hover:text-red-700 leading-none" title="Delete"><?= icon('trash') ?></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach ?>

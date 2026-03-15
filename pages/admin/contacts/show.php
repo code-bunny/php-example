@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/../_nav.php';
+require_once __DIR__ . '/../../components/icons.php';
 Model::setDb($pdo);
 
 $contact = Contact::find($id);
@@ -39,7 +40,9 @@ if (!$contact) {
         <form method="POST" action="/admin/contacts/<?= $contact->id ?>/delete"
               onsubmit="return confirm('Delete this message?')">
             <?php csrf_field() ?>
-            <button type="submit" class="text-sm text-red-600 hover:underline">Delete this message</button>
+            <button type="submit" class="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-800" title="Delete">
+                <?= icon('trash', 'w-4 h-4') ?> Delete this message
+            </button>
         </form>
     </div>
 </div>

@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/../_nav.php';
 require_once __DIR__ . '/../../components/pagination.php';
+require_once __DIR__ . '/../../components/icons.php';
 Model::setDb($pdo);
 
 $title  = 'Admin — Contacts';
@@ -40,13 +41,15 @@ $contacts = Contact::paginate($size, $offset);
                     <td class="px-4 py-3 font-medium text-gray-900"><?= htmlspecialchars($contact->email) ?></td>
                     <td class="px-4 py-3 text-gray-600 max-w-xs truncate"><?= htmlspecialchars($contact->message) ?></td>
                     <td class="px-4 py-3 text-gray-500"><?= htmlspecialchars($contact->created_at) ?></td>
-                    <td class="px-4 py-3 text-right space-x-3">
-                        <a href="/admin/contacts/<?= $contact->id ?>" class="text-indigo-600 hover:underline">View</a>
-                        <form method="POST" action="/admin/contacts/<?= $contact->id ?>/delete" class="inline"
-                              onsubmit="return confirm('Delete this message?')">
-                            <?php csrf_field() ?>
-                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                        </form>
+                    <td class="px-4 py-3 text-right">
+                        <div class="inline-flex items-center gap-3">
+                            <a href="/admin/contacts/<?= $contact->id ?>" class="inline-flex text-indigo-600 hover:text-indigo-800" title="View"><?= icon('eye') ?></a>
+                            <form method="POST" action="/admin/contacts/<?= $contact->id ?>/delete" class="inline-flex"
+                                  onsubmit="return confirm('Delete this message?')">
+                                <?php csrf_field() ?>
+                                <button type="submit" class="inline-flex p-0 text-red-500 hover:text-red-700 leading-none" title="Delete"><?= icon('trash') ?></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach ?>

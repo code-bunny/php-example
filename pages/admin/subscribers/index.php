@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/../_nav.php';
 require_once __DIR__ . '/../../components/pagination.php';
+require_once __DIR__ . '/../../components/icons.php';
 Model::setDb($pdo);
 
 $title  = 'Admin — Subscribers';
@@ -42,7 +43,7 @@ $subscribers = Subscriber::paginate($size, $offset);
                         <form method="POST" action="/admin/subscribers/<?= $subscriber->id ?>/delete" class="inline"
                               onsubmit="return confirm('Unsubscribe this address?')">
                             <?php csrf_field() ?>
-                            <button type="submit" class="text-red-600 hover:underline">Unsubscribe</button>
+                            <button type="submit" class="inline-flex p-0 text-red-500 hover:text-red-700 leading-none" title="Unsubscribe"><?= icon('trash') ?></button>
                         </form>
                     </td>
                 </tr>
