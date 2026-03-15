@@ -1,0 +1,397 @@
+#!/usr/bin/env php
+<?php
+
+define('APP_ROOT', dirname(__DIR__));
+
+$args = array_slice($argv, 1);
+
+if (count($args) < 2) {
+    usage();
+}
+
+$type = array_shift($args);
+$name = array_shift($args); // e.g. "Post" or "post"
+
+switch ($type) {
+    case 'model':      generateModel($name, $args);      break;
+    case 'controller': generateController($name, $args); break;
+    case 'api':        generateApi($name, $args);        break;
+    case 'serializer': generateSerializer($name, $args); break;
+    case 'migration':  generateMigration($name, $args);  break;
+    default:           usage();
+}
+
+// ── Generators ────────────────────────────────────────────────────────────────
+
+function generateModel(string $name, array $fields): void
+{
+    $class = className($name);
+    $table = tableName($name);
+
+    // Model file
+    $modelPath = APP_ROOT . "/app/models/{$class}.php";
+    writeFile($modelPath, <<<PHP
+<?php
+
+require_once __DIR__ . '/Model.php';
+
+class {$class} extends Model
+{
+    protected static string \$table = '{$table}';
+}
+PHP);
+
+    // Migration file
+    $number    = nextMigrationNumber();
+    $slug      = 'create_' . $table;
+    $migPath   = APP_ROOT . "/migrations/{$number}_{$slug}.php";
+    $columns   = migrationColumns($fields);
+    $sep       = $columns ? "\n" : '';
+    writeFile($migPath, <<<PHP
+<?php
+
+return function (PDO \$pdo): void {
+    \$pdo->exec("CREATE TABLE IF NOT EXISTS {$table} (
+        id CHAR(36) PRIMARY KEY,
+{$columns}{$sep}        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )");
+};
+PHP);
+}
+
+function generateController(string $name, array $actions): void
+{
+    $class  = className($name) . 'Controller';
+    $view   = viewDir($name);
+    $title  = ucfirst(strtolower($name));
+
+    if (empty($actions)) {
+        $actions = ['index'];
+    }
+
+    $methods = '';
+    foreach ($actions as $action) {
+        $methods .= <<<PHP
+
+    public function {$action}(): string
+    {
+        \$this->title = '{$title}';
+        return \$this->render('{$view}/{$action}');
+    }
+PHP;
+    }
+
+    $controllerPath = APP_ROOT . "/app/controllers/{$class}.php";
+    writeFile($controllerPath, <<<PHP
+<?php
+
+require_once APP_ROOT . '/app/controllers/Controller.php';
+
+class {$class} extends Controller
+{{$methods}
+}
+PHP);
+
+    // View stubs
+    foreach ($actions as $action) {
+        $viewPath = APP_ROOT . "/app/views/{$view}/{$action}.php";
+        writeFile($viewPath, <<<HTML
+<h1><?= htmlspecialchars(\$this->title ?? '') ?></h1>
+HTML);
+    }
+}
+
+function generateApi(string $name, array $fields): void
+{
+    $class      = className($name);
+    $plural     = pluralName($name);
+    $route      = strtolower($plural);
+    $serializer = $class . 'Serializer';
+    $varName    = lcfirst($class);
+
+    // Endpoint file
+    $endpointPath = APP_ROOT . "/app/api/endpoints/{$plural}.php";
+    writeFile($endpointPath, <<<PHP
+<?php
+
+require_once APP_ROOT . '/app/models/{$class}.php';
+require_once APP_ROOT . '/app/api/serializers/{$serializer}.php';
+
+resource('{$route}', function () {
+
+    get(function () {
+        \$page  = pageParams();
+        \$total = {$class}::count();
+        \$last  = max(1, (int) ceil(\$total / \$page['size']));
+
+        return [
+            'data'  => {$serializer}::many({$class}::paginate(\$page['size'], \$page['offset'])),
+            'links' => paginationLinks('/api/v1/{$route}', \$page['number'], \$last, \$page['size']),
+            'meta'  => ['total' => \$total],
+        ];
+    });
+
+    post(function () {
+        \$attrs = attributes();
+        // TODO: validate \$attrs
+        \${$varName} = new {$class}(\$attrs);
+        \${$varName}->save();
+
+        return [[
+            'data' => {$serializer}::one(\${$varName}),
+        ], 201];
+    });
+
+    routeParam(':id', function () {
+
+        get(function () {
+            \${$varName} = {$class}::find(param('id'));
+            if (!\${$varName}) notFound('{$class} not found.');
+
+            return ['data' => {$serializer}::one(\${$varName})];
+        });
+
+        patch(function () {
+            \${$varName} = {$class}::find(param('id'));
+            if (!\${$varName}) notFound('{$class} not found.');
+
+            \$attrs = attributes();
+            foreach (\$attrs as \$key => \$value) {
+                \${$varName}->\$key = \$value;
+            }
+            \${$varName}->save();
+
+            return ['data' => {$serializer}::one(\${$varName})];
+        });
+
+        delete(function () {
+            \${$varName} = {$class}::find(param('id'));
+            if (!\${$varName}) notFound('{$class} not found.');
+
+            \${$varName}->delete();
+            return null;
+        });
+
+    });
+
+});
+PHP);
+
+    // Serializer
+    generateSerializer($name, $fields);
+
+    // Register in Api.php
+    $apiPath = APP_ROOT . '/app/api/Api.php';
+    $line    = "require_once APP_ROOT . '/app/api/endpoints/{$plural}.php';";
+    appendToApi($apiPath, $line);
+}
+
+function generateSerializer(string $name, array $fields): void
+{
+    $class      = className($name);
+    $type       = strtolower(pluralName($name));
+    $serializer = $class . 'Serializer';
+
+    $attrNames = array_map(
+        fn($f) => "'" . camelCase(explode(':', $f)[0]) . "'",
+        array_filter($fields, fn($f) => !str_contains($f, ':') || !in_array(explode(':', $f)[1] ?? '', ['']))
+    );
+    $attrNames[] = "'createdAt'";
+    $attrNames[] = "'updatedAt'";
+    $attrList = implode(', ', $attrNames);
+
+    $path = APP_ROOT . "/app/api/serializers/{$serializer}.php";
+    writeFile($path, <<<PHP
+<?php
+
+require_once APP_ROOT . '/app/api/serializers/Serializer.php';
+
+class {$serializer} extends Serializer
+{
+    protected string \$type = '{$type}';
+
+    protected static array \$attributes = [{$attrList}];
+}
+PHP);
+}
+
+function generateMigration(string $name, array $fields): void
+{
+    $number = nextMigrationNumber();
+    $slug   = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
+    $path   = APP_ROOT . "/migrations/{$number}_{$slug}.php";
+    $body   = migrationBody($name, $fields);
+
+    writeFile($path, <<<PHP
+<?php
+
+return function (PDO \$pdo): void {
+{$body}
+};
+PHP);
+}
+
+function migrationBody(string $name, array $fields): string
+{
+    // Add<Anything>To<Table> with fields → ALTER TABLE ... ADD COLUMN
+    if (preg_match('/^Add.+To([A-Z][a-zA-Z]*)$/', $name, $m) && !empty($fields)) {
+        $table = toSnakeCase($m[1]);
+        $lines = [];
+        foreach ($fields as $field) {
+            [$col, $type] = explode(':', $field) + [1 => 'string'];
+            $lines[] = "    \$pdo->exec(\"ALTER TABLE {$table} ADD COLUMN {$col} " . sqlType($type) . " NOT NULL\");";
+        }
+        return implode("\n", $lines);
+    }
+
+    // Remove<Anything>From<Table> with fields → ALTER TABLE ... DROP COLUMN
+    if (preg_match('/^Remove.+From([A-Z][a-zA-Z]*)$/', $name, $m) && !empty($fields)) {
+        $table = toSnakeCase($m[1]);
+        $lines = [];
+        foreach ($fields as $field) {
+            $col   = explode(':', $field)[0];
+            $lines[] = "    \$pdo->exec(\"ALTER TABLE {$table} DROP COLUMN {$col}\");";
+        }
+        return implode("\n", $lines);
+    }
+
+    // Unknown pattern or no fields → empty migration
+    return "    // TODO: implement migration";
+}
+
+function toSnakeCase(string $name): string
+{
+    return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function className(string $name): string
+{
+    // Convert snake_case or kebab-case to PascalCase
+    return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name)));
+}
+
+function tableName(string $name): string
+{
+    // PascalCase or camelCase → snake_case → plural
+    $snake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', className($name)));
+    return pluralize($snake);
+}
+
+function pluralName(string $name): string
+{
+    return className(pluralize(strtolower($name)));
+}
+
+function viewDir(string $name): string
+{
+    return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', className($name)));
+}
+
+function camelCase(string $name): string
+{
+    return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
+}
+
+function pluralize(string $word): string
+{
+    if (str_ends_with($word, 'y') && !preg_match('/[aeiou]y$/', $word)) {
+        return substr($word, 0, -1) . 'ies';
+    }
+    if (str_ends_with($word, 's') || str_ends_with($word, 'x') || str_ends_with($word, 'ch')) {
+        return $word . 'es';
+    }
+    return $word . 's';
+}
+
+function sqlType(string $type): string
+{
+    return match ($type) {
+        'text'              => 'TEXT',
+        'integer', 'int'    => 'INT',
+        'boolean', 'bool'   => 'TINYINT(1)',
+        'decimal'           => 'DECIMAL(10,2)',
+        'float'             => 'FLOAT',
+        'date'              => 'DATE',
+        'datetime'          => 'DATETIME',
+        default             => 'VARCHAR(255)',
+    };
+}
+
+function migrationColumns(array $fields): string
+{
+    $lines = [];
+    foreach ($fields as $field) {
+        [$col, $type] = explode(':', $field) + [1 => 'string'];
+        $lines[] = "        {$col} " . sqlType($type) . " NOT NULL";
+    }
+
+    return empty($lines) ? '' : implode(",\n", $lines) . ',';
+}
+
+function nextMigrationNumber(): string
+{
+    $files   = glob(APP_ROOT . '/migrations/*.php') ?: [];
+    $numbers = array_map(fn($f) => (int) basename($f), $files);
+    $next    = empty($numbers) ? 1 : max($numbers) + 1;
+    return str_pad($next, 4, '0', STR_PAD_LEFT);
+}
+
+function appendToApi(string $apiPath, string $line): void
+{
+    $contents = file_get_contents($apiPath);
+    if (str_contains($contents, $line)) {
+        echo "  (already registered in Api.php)\n";
+        return;
+    }
+    // Append before closing PHP tag or at end of file
+    $contents = rtrim($contents) . "\n" . $line . "\n";
+    file_put_contents($apiPath, $contents);
+    echo "  updated  {$apiPath}\n";
+}
+
+function writeFile(string $path, string $content): void
+{
+    $dir = dirname($path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    if (file_exists($path)) {
+        echo "  skipped  {$path} (already exists)\n";
+        return;
+    }
+    file_put_contents($path, $content . "\n");
+    echo "  created  {$path}\n";
+}
+
+function usage(): never
+{
+    echo <<<USAGE
+Usage:
+  bin/generate model      <Name> [field:type ...]
+  bin/generate controller <Name> [action ...]
+  bin/generate api        <Name> [field:type ...]
+  bin/generate serializer <Name> [field:type ...]
+  bin/generate migration  <Name> [field:type ...]
+
+Examples:
+  bin/generate model      Post title:string body:text
+  bin/generate controller Posts index show
+  bin/generate api        Post title:string body:text
+  bin/generate serializer Post title:string body:text
+  bin/generate migration  AddFullBodyToUsers full_body:text
+  bin/generate migration  RemoveAvatarFromPosts avatar:string
+  bin/generate migration  AddIndexToSubscribers
+
+Migration name conventions:
+  Add<X>To<Table>      → ALTER TABLE <table> ADD COLUMN ...
+  Remove<X>From<Table> → ALTER TABLE <table> DROP COLUMN ...
+  Anything else        → empty migration with a TODO comment
+
+Field types: string, text, integer, boolean, decimal, float, date, datetime
+
+USAGE;
+    exit(1);
+}
