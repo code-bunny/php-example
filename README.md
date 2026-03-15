@@ -113,6 +113,94 @@ Authorization: Bearer <your-api-key>
 
 In Swagger UI, click **Authorize 🔒**, paste the token, and click **Authorize**.
 
+## JSON:API
+
+The API follows the [JSON:API v1.1](https://jsonapi.org/) spec. All attribute names use camelCase. Responses include a `jsonapi` version envelope.
+
+### Routing DSL
+
+Endpoints are defined in `app/api/endpoints/` using a Grape-inspired DSL. Routes are grouped by resource — `resource()` sets the path prefix, `routeParam()` adds a URL parameter segment, and `get()` / `post()` / `patch()` / `delete()` register handlers scoped to the current path.
+
+```php
+resource('posts', function () {
+
+    get(function () { ... });   // GET /api/v1/posts
+    post(function () { ... });  // POST /api/v1/posts
+
+    routeParam(':id', function () {
+        get(function () { ... });    // GET /api/v1/posts/:id
+        patch(function () { ... });  // PATCH /api/v1/posts/:id
+        delete(function () { ... }); // DELETE /api/v1/posts/:id
+    });
+
+});
+```
+
+Inside any handler, these helpers are available:
+
+| Helper | Description |
+|--------|-------------|
+| `param('id')` | URL parameter (e.g. the `:id` segment) |
+| `attributes()` | Parsed `data.attributes` from the request body |
+| `pageParams()` | `page[size]` and `page[number]` from the query string |
+| `paginationLinks($base, $number, $last, $size)` | Builds JSON:API pagination links |
+| `notFound($message)` | Responds 404 and exits |
+| `unprocessable($errors)` | Responds 422 and exits |
+| `conflict($message)` | Responds 409 and exits |
+
+Handlers return an array (status 200), `[$data, $status]` for other codes, or `null` for 204 No Content.
+
+To add a new endpoint, create a file in `app/api/endpoints/` and require it in `app/api/Api.php`.
+
+### Serializers
+
+Serializers live in `app/api/serializers/` and extend `Serializer`. Each one declares its JSON:API type, which attributes to expose, and optionally relationships. Attribute names are camelCase — they are automatically mapped to snake_case model properties (`createdAt` → `created_at`). `createdAt` and `updatedAt` are formatted as ISO 8601 by the base class.
+
+```php
+class PostSerializer extends Serializer
+{
+    protected string $type = 'posts';
+
+    protected static array $attributes = ['title', 'body', 'createdAt', 'updatedAt'];
+}
+```
+
+Use a protected method with the same name as the attribute to apply a custom transform:
+
+```php
+class PostSerializer extends Serializer
+{
+    protected string $type = 'posts';
+
+    protected static array $attributes = ['title', 'body', 'createdAt', 'updatedAt'];
+
+    protected function title(object $post): string
+    {
+        return strtoupper($post->title);
+    }
+}
+```
+
+Relationships produce [resource linkage](https://jsonapi.org/format/#document-resource-object-linkage) (`id` + `type` only — no `included`):
+
+```php
+class PostSerializer extends Serializer
+{
+    protected string $type = 'posts';
+
+    protected static array $attributes  = ['title', 'body'];
+    protected static array $belongsTo   = ['author' => UserSerializer::class];
+    protected static array $hasMany     = ['comments' => CommentSerializer::class];
+}
+```
+
+Call serializers from endpoint handlers:
+
+```php
+PostSerializer::one($post)      // single resource object
+PostSerializer::many($posts)    // array of resource objects
+```
+
 ## Testing
 
 Run the full test suite:
