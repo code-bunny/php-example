@@ -124,15 +124,27 @@ Endpoints are defined in `app/api/endpoints/` using a Grape-inspired DSL. Routes
 ```php
 resource('posts', function () {
 
-    get(function () { ... });   // GET /api/v1/posts
-    post(function () { ... });  // POST /api/v1/posts
+    get(function () { ... });          // GET /api/v1/posts
+    post(function () { ... });         // POST /api/v1/posts
+    get('latest', function () { ... }); // GET /api/v1/posts/latest
 
     routeParam(':id', function () {
-        get(function () { ... });    // GET /api/v1/posts/:id
-        patch(function () { ... });  // PATCH /api/v1/posts/:id
-        delete(function () { ... }); // DELETE /api/v1/posts/:id
+        get(function () { ... });             // GET /api/v1/posts/:id
+        patch(function () { ... });           // PATCH /api/v1/posts/:id
+        delete(function () { ... });          // DELETE /api/v1/posts/:id
+        patch('publish', function () { ... }); // PATCH /api/v1/posts/:id/publish
     });
 
+});
+```
+
+Passing a path string as the first argument to any HTTP method appends that segment to the current context. This works at any nesting level — inside a `resource()` block, inside a `routeParam()` block, or both.
+
+A real example — `GET /api/v1/posts/latest` returns the 10 most recent posts:
+
+```php
+get('latest', function () {
+    return ['data' => PostSerializer::many(Post::paginate(10, 0))];
 });
 ```
 

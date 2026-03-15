@@ -30,6 +30,10 @@ resource('posts', function () {
         return [['data' => PostSerializer::one($post)], 201];
     });
 
+    get('latest', function () {
+        return ['data' => PostSerializer::many(Post::paginate(10, 0))];
+    });
+
     routeParam(':id', function () {
 
         get(function () {

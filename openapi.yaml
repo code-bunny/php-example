@@ -44,6 +44,26 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
+  /posts/latest:
+    get:
+      summary: Latest posts
+      description: Returns the 10 most recently created posts.
+      tags: [Posts]
+      responses:
+        '200':
+          description: The 10 most recent posts
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  jsonapi:
+                    type: object
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostResourceObject'
+
   /posts/{id}:
     get:
       summary: Get a post

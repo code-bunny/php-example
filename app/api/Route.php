@@ -151,10 +151,21 @@ function routeParam(string $param, callable $fn): void
     Route::pop();
 }
 
-function get(callable $fn): void    { Route::addRoute('GET',    $fn); }
-function post(callable $fn): void   { Route::addRoute('POST',   $fn); }
-function patch(callable $fn): void  { Route::addRoute('PATCH',  $fn); }
-function delete(callable $fn): void { Route::addRoute('DELETE', $fn); }
+function get(string|callable $pathOrFn, ?callable $fn = null): void    { _route('GET',    $pathOrFn, $fn); }
+function post(string|callable $pathOrFn, ?callable $fn = null): void   { _route('POST',   $pathOrFn, $fn); }
+function patch(string|callable $pathOrFn, ?callable $fn = null): void  { _route('PATCH',  $pathOrFn, $fn); }
+function delete(string|callable $pathOrFn, ?callable $fn = null): void { _route('DELETE', $pathOrFn, $fn); }
+
+function _route(string $method, string|callable $pathOrFn, ?callable $fn): void
+{
+    if (is_callable($pathOrFn)) {
+        Route::addRoute($method, $pathOrFn);
+    } else {
+        Route::push('/' . trim($pathOrFn, '/'));
+        Route::addRoute($method, $fn);
+        Route::pop();
+    }
+}
 
 function param(string $name): ?string { return Route::param($name); }
 function attributes(): array          { return Route::attributes(); }
