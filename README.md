@@ -64,7 +64,7 @@ Install PHP dependencies:
 composer install
 ```
 
-Run migrations:
+Run migrations (also writes `db/schema.php`):
 
 ```bash
 bin/migrate
@@ -352,7 +352,7 @@ The app follows the Rails convention — `DB_NAME` in `.env` is the base name an
 | development | mydb_development |
 | test | mydb_test |
 
-Run migrations against both:
+Run migrations against both (regenerates `db/schema.php` each time):
 
 ```bash
 bin/migrate
@@ -369,6 +369,7 @@ APP_ENV=test bin/migrate
 │   ├── openapi.yaml       # OpenAPI specification (served at /openapi.yaml)
 │   └── phpunit.xml        # PHPUnit configuration
 ├── db/
+│   ├── schema.php         # Auto-generated schema snapshot (committed to git)
 │   ├── seeds.php          # Seeds sample data and the first admin user
 │   └── migrations/        # Versioned schema migrations
 ├── app/
