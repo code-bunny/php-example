@@ -21,6 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($post_title === '') $errors[] = 'Title is required.';
     if ($body === '')       $errors[] = 'Body is required.';
 
+    if ($post_title && empty($errors)) {
+        $existing = Post::where('title', $post_title);
+        if (!empty($existing) && $existing[0]->id !== ($post?->id)) {
+            $errors[] = 'A post with that title already exists.';
+        }
+    }
+
     if (empty($errors)) {
         if ($post) {
             $post->title = $post_title;

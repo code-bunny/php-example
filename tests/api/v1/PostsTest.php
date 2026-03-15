@@ -30,13 +30,14 @@ class PostsTest extends \TestCase
 
     public function test_create_post(): void
     {
+        $title    = 'Hello ' . uniqid();
         $response = $this->post('/api/v1/posts', [
-            'data' => ['type' => 'posts', 'attributes' => ['title' => 'Hello', 'body' => 'World']],
+            'data' => ['type' => 'posts', 'attributes' => ['title' => $title, 'body' => 'World']],
         ]);
 
         $response->assertCreated()
             ->assertJsonPath('data.type', 'posts')
-            ->assertJsonPath('data.attributes.title', 'Hello');
+            ->assertJsonPath('data.attributes.title', $title);
 
         $this->created[] = $response->json['data']['id'];
     }
@@ -59,12 +60,13 @@ class PostsTest extends \TestCase
 
     public function test_show_post(): void
     {
-        $id = $this->createPost('Show Test');
+        $title = 'Show Test ' . uniqid();
+        $id    = $this->createPost($title);
 
         $this->get("/api/v1/posts/$id")
             ->assertOk()
             ->assertJsonPath('data.id', $id)
-            ->assertJsonPath('data.attributes.title', 'Show Test');
+            ->assertJsonPath('data.attributes.title', $title);
     }
 
     public function test_show_unknown_id_returns_404(): void
@@ -77,19 +79,20 @@ class PostsTest extends \TestCase
 
     public function test_update_post(): void
     {
-        $id = $this->createPost('Before');
+        $id    = $this->createPost();
+        $after = 'After ' . uniqid();
 
         $this->patch("/api/v1/posts/$id", [
-            'data' => ['type' => 'posts', 'attributes' => ['title' => 'After']],
+            'data' => ['type' => 'posts', 'attributes' => ['title' => $after]],
         ])->assertOk()
-          ->assertJsonPath('data.attributes.title', 'After');
+          ->assertJsonPath('data.attributes.title', $after);
     }
 
     // ── Destroy ──────────────────────────────────────────────────────
 
     public function test_delete_post(): void
     {
-        $id = $this->createPost('Delete Me');
+        $id = $this->createPost();
 
         $this->delete("/api/v1/posts/$id")->assertNoContent();
         $this->get("/api/v1/posts/$id")->assertStatus(404);
@@ -113,10 +116,10 @@ class PostsTest extends \TestCase
 
     // ── Helpers ──────────────────────────────────────────────────────
 
-    private function createPost(string $title): string
+    private function createPost(string $title = ''): string
     {
         $response = $this->post('/api/v1/posts', [
-            'data' => ['type' => 'posts', 'attributes' => ['title' => $title, 'body' => 'Test body']],
+            'data' => ['type' => 'posts', 'attributes' => ['title' => ($title ?: uniqid()), 'body' => 'Test body']],
         ]);
         $id = $response->json['data']['id'];
         $this->created[] = $id;
