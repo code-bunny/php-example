@@ -30,7 +30,7 @@ abstract class TestCase extends BaseTestCase
 
     private function request(string $method, string $path, ?array $body = null): TestResponse
     {
-        $url = ($_ENV['APP_URL'] ?? 'http://localhost:8000') . $path;
+        $url = (getenv('APP_URL') ?: 'http://localhost:8000') . $path;
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [

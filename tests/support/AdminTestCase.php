@@ -44,7 +44,7 @@ abstract class AdminTestCase extends PageTestCase
 
     protected function apiDelete(string $path): void
     {
-        $url = ($_ENV['APP_URL'] ?? 'http://localhost:8000') . $path;
+        $url = (getenv('APP_URL') ?: 'http://localhost:8000') . $path;
         $ch  = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_CUSTOMREQUEST  => 'DELETE',
@@ -58,7 +58,7 @@ abstract class AdminTestCase extends PageTestCase
 
     private function apiPost(string $path, array $body): string
     {
-        $url = ($_ENV['APP_URL'] ?? 'http://localhost:8000') . $path;
+        $url = (getenv('APP_URL') ?: 'http://localhost:8000') . $path;
         $ch  = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,

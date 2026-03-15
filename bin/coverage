@@ -14,18 +14,18 @@ trap cleanup EXIT INT TERM
 rm -f "$TMP"/phpcov_*.json
 rm -rf "$ROOT/coverage"
 
-# ── Stop anything on port 8000 and start a coverage-enabled server ────────────
-lsof -ti:8000 | xargs kill 2>/dev/null || true
+# ── Test server runs on 8001 so the dev server on 8000 can stay running ───────
+lsof -ti:8001 | xargs kill 2>/dev/null || true
 sleep 0.3
 
-echo "Starting coverage server on localhost:8000..."
-APP_ENV=test XDEBUG_MODE=coverage php -S localhost:8000 "$ROOT/router.php" >/dev/null 2>&1 &
+echo "Starting coverage server on localhost:8001..."
+APP_ENV=test XDEBUG_MODE=coverage php -S localhost:8001 "$ROOT/router.php" >/dev/null 2>&1 &
 SERVER_PID=$!
 sleep 0.8
 
 # ── Run all tests ─────────────────────────────────────────────────────────────
 # Unit tests collect in-process coverage; request tests hit the coverage server.
-XDEBUG_MODE=coverage "$ROOT/vendor/bin/phpunit" "$@"
+APP_URL=http://localhost:8001 XDEBUG_MODE=coverage "$ROOT/vendor/bin/phpunit" "$@"
 
 # ── Stop the coverage server ──────────────────────────────────────────────────
 kill "$SERVER_PID" 2>/dev/null || true

@@ -14,12 +14,12 @@ if [ ! -f "$ROOT/vendor/bin/phpunit" ]; then
     exit 1
 fi
 
-# Stop anything on port 8000 and start a test server in its place
-lsof -ti:8000 | xargs kill 2>/dev/null || true
+# Test server runs on 8001 so the dev server on 8000 can stay running
+lsof -ti:8001 | xargs kill 2>/dev/null || true
 sleep 0.3
 
-APP_ENV=test php -S localhost:8000 "$ROOT/router.php" >/dev/null 2>&1 &
+APP_ENV=test php -S localhost:8001 "$ROOT/router.php" >/dev/null 2>&1 &
 SERVER_PID=$!
 sleep 0.8
 
-"$ROOT/vendor/bin/phpunit" "$@"
+APP_URL=http://localhost:8001 "$ROOT/vendor/bin/phpunit" "$@"
